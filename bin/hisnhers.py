@@ -120,8 +120,8 @@ def main(argv = None):
     # Setup argument parser
     parser = ArgumentParser(description='Some code', formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
-    parser.add_argument('FASTQ_FILE',dest='fastq_file',help='Fastq file')
-    parser.add_argument('--skip-adapter',help='Skip 20 bases of adapter sequence.')
+    parser.add_argument('FASTQ_FILE',help='Fastq file')
+    parser.add_argument('--skip-adapter', dest='adapter_sequence', help='Skip 20 bases of adapter sequence.')
     args = parser.parse_args()
 
     # Read fastq file and report length, base counts
@@ -130,10 +130,10 @@ def main(argv = None):
     with open(fqfilename,'r') as f:
         seqs = fastqToSequenceList(f)
 
-    skip_adapter = args.skip_adapter
+    adapter_sequence = args.adapter_sequence
     for i,seqdata in enumerate(seqs):
         seqstr = seqdata[1]
-        if skip_adapter:
+        if adapter_sequence:
             seqstr = seqstr[20:]
 
         print 'Length %d: %d' % (i,len(seqstr))
