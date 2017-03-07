@@ -77,6 +77,15 @@ import logging
 DEBUG = os.environ.get("HISNHERS_DEBUG",0)
 
 
+def runcmd(cmd):
+    '''
+    Execute a command and return stdout, stderr, and the return code
+    '''
+    proc = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdoutstr, stderrstr = proc.communicate()
+    return (proc.returncode,stdoutstr,stderrstr)
+
+
 def annotate(seqid, bases):
     '''
     Annotate the contig
@@ -94,18 +103,20 @@ def fastqToSequenceList(fileh):
 
 
     for line in fileh:
-        if line.strip() == '':
+        line = line.strip()
+        if line == '':
             continue
 
         if line.startswith('@'):
             # It's a new record
-            seqs.append((seqid,bases,qscores))
+            if seqid is not None:
+                seqs.append((seqid,bases,qscores))
             seqid = bases = qscores = None
 
             m = re.match(r'^@([^ ]+).*',line)
             if m is None:
                 raise Exception('No sequence identifier found after the @ symbol')
-            seqid = m.groups(1)
+            seqid = m.group(1)
 
         elif seqid is not None and bases is None and line.strip() != '+':
             bases = line.strip()
@@ -139,22 +150,35 @@ def main(argv = None):
         print 'Length %d: %d' % (i,len(seqstr))
         basecounts = 'Base counts- '
         for base in ['A','T','C','G']:
-            basecounts += '%s: %d' % (base,seqstr.count(base))
+            basecounts += '%s: %d\t' % (base,seqstr.count(base))
         print basecounts
 
+    # Write out sequences in fasta format
+    (path,ext) = os.path.splitext(fqfilename)
+    fafilename = path + '.fa'
+    print 'Writing to %s' % fafilename
+    with open(fafilename,'w') as f:
+        for seqdata in seqs:
+            f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
 
-    # Run assembler with fastq file input and read the output contig
-    contigfilename = '%s.contigs' % fqfilename
+
+
+    # # Run megaAssembler with fastq file input and read the output contig
+    # contigfilename = '%s.contigs' % fqfilename
+    # assemblerargs = [
+    #     'megaAssembler',
+    #     fqfilename,
+    # ]
+
+    # Run hyperAssembler with fastq file input and read the output contig
+    contigfilename = '%s.contigs' % fafilename
     assemblerargs = [
-        'megaAssembler',
-        '-i',
-        fqfilename,
-        '-o',
-        contigfilename,
+        'hyperAssembler',
+        fafilename,
     ]
+
     cmd = ' '.join(assemblerargs)
-    proc = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    returncode, stdoutstr, stderrstr = proc.communicate()
+    returncode, stdoutstr, stderrstr = runcmd(cmd)
 
     if returncode != 0:
         raise Exception('Error running assembler with cmd %s\nstdout: %s\nstderr: %s' % (cmd,stdoutstr,stderrstr))
@@ -174,33 +198,33 @@ def main(argv = None):
                 contigs.append((seqid, line.strip()))
                 seqid = None
 
-    # Using a multiprocessing Pool
-    from multiprocessing import Pool
-    numprocs = os.environ.get('ANNOTATION_PROC_NUM',4)
-    pool = Pool(numprocs)
-    annotations = pool.map(annotate,contigs)
+    # # Using a multiprocessing Pool
+    # from multiprocessing import Pool
+    # numprocs = os.environ.get('ANNOTATION_PROC_NUM',4)
+    # pool = Pool(numprocs)
+    # annotations = pool.map(annotate,contigs)
 
 
-    # Using MPI
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    # size = comm.Get_size()
-    # rank = comm.Get_rank()
+    # # Using MPI
+    # from mpi4py import MPI
+    # comm = MPI.COMM_WORLD
+    # # size = comm.Get_size()
+    # # rank = comm.Get_rank()
     
-    contigs = comm.scatter(contigs,root=0)
-    annots = annotate(contigs)
+    # contigs = comm.scatter(contigs,root=0)
+    # annots = annotate(contigs)
 
-    annotations = comm.gather(annots,root=0)
-
-
-    # # One at a time
-    # for seqid, bases in contigs:
-    #     annotations += annotate(seqid, bases)
+    # annotations = comm.gather(annots,root=0)
 
 
-    # Dump annotations in JSON form
-    with open('%s.annotations' % fqfilename, 'w') as f:
-        f.write(json.dumps(annotations))
+    # # # One at a time
+    # # for seqid, bases in contigs:
+    # #     annotations += annotate(seqid, bases)
+
+
+    # # Dump annotations in JSON form
+    # with open('%s.annotations' % fqfilename, 'w') as f:
+    #     f.write(json.dumps(annotations))
 
 
 if __name__ == '__main__':
