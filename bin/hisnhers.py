@@ -187,17 +187,19 @@ def main(argv = None):
     with open(contigfilename,'r') as c:
         seqid = None
         for line in c:
-            if line.strip() == '':
+            line = line.strip()
+            if line == '':
                 continue
             # Check for seq id line
             m = re.match(r'^>\s*([^ ]+).*', line)
             if m is not None:
-                seqid = m.groups(1)
+                seqid = m.group(1)
             else:
                 # Otherwise, it's the bases
-                contigs.append((seqid, line.strip()))
+                contigs.append((seqid, line))
                 seqid = None
 
+    annotations = []
     # # Using a multiprocessing Pool
     # from multiprocessing import Pool
     # numprocs = os.environ.get('ANNOTATION_PROC_NUM',4)
@@ -217,11 +219,15 @@ def main(argv = None):
     # annotations = comm.gather(annots,root=0)
 
 
-    # # # One at a time
-    # # for seqid, bases in contigs:
-    # #     annotations += annotate(seqid, bases)
+    # One at a time
+    from ha.annotate import StartStopAnnotator
 
+    annotator = StartStopAnnotator()
+    for seqid, contig in contigs:
+        print 'contig length: %d' % len(contig)
+        annotations += annotator.annotate(seqid, contig)
 
+    print annotations
     # # Dump annotations in JSON form
     # with open('%s.annotations' % fqfilename, 'w') as f:
     #     f.write(json.dumps(annotations))
