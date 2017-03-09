@@ -16,6 +16,7 @@ To try out the functional script follow these steps:
 * Checkout the production branch of the project
 
     ```
+    $ git clone https://github.com/harvardinformatics/python-workshop.git
     $ cd python-workshop
     $ git checkout production
     ```
