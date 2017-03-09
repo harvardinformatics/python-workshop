@@ -229,7 +229,7 @@ def main(argv = None):
         annotations += result.get()
 
     endtime = time.time()
-    print 'Elapsed annotation time %d seconds' % int(endtime - starttime)
+    print 'Elapsed parallel annotation time %d seconds' % int(endtime - starttime)
 
 
     # # Using MPI
@@ -251,7 +251,7 @@ def main(argv = None):
         annotations += annotateStartStopCodons(seqid, contig)
         annotations += annotatePalindromes(seqid, contig)
     endtime = time.time()
-    print 'Elapsed annotation time %d seconds' % int(endtime - starttime)
+    print 'Elapsed serial annotation time %d seconds' % int(endtime - starttime)
 
     # Make a dictionary keyed by contig name
     annotatedcontigs = {}

@@ -76,5 +76,5 @@ def annotatePalindromes(seqid, contig):
                 'key'       : 'palindrome',
             }
         )
-
+    sleep(2)
     return annotations
