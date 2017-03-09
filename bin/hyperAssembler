@@ -3,15 +3,17 @@
 # Read a fasta file and concatenate all of the sequences into a single contig.
 
 if [[ -z "$@" ]]; then
-    echo 'You must supply a fastq file (e.g. megaAssembler human.fastq)'
+    echo 'You must supply a fasta file (e.g. megaAssembler human.fastq)'
     exit 1
 fi
 
 if [[ ${#@} -gt 1 ]]; then
-    echo 'hyperAssembler only takes one argument (e.g. megaAssembler human.fastq)'
+    echo 'hyperAssembler only takes one argument (e.g. megaAssembler human.fasta)'
     exit 1
 fi
 echo "Assembling genome in $@"
+
+echo "Start time: `date +%r`"
 
 export contig=''
 
@@ -33,5 +35,6 @@ echo "$contig" | cut -c-${half} >> "${@}.contigs"
 half=`expr $half + 1`
 echo "> contig2" >> "${@}.contigs"
 echo "$contig" | cut -c${half}- >> "${@}.contigs"
+echo "End time: `date +%r`"
 echo 'Done'
 

@@ -12,51 +12,69 @@ created on March 7, 2017
 
 from time import sleep
 
-class StartStopAnnotator(object):
+def annotateStartStopCodons(seqid, contig):
     '''
-    Annotation object that annotates start and stop codons
+    Returns a list of dictionaries representing annotation data.
+    Each dictionary includes a start, end, seqid, and key that indicates 
+    the name of the annotation and it's range
+
+    Just does start and stop codons
     '''
 
-    def annotate(self, seqid, contig):
-        '''
-        Returns a list of dictionaries representing annotation data.
-        Each dictionary includes a start, end, seqid, and key that indicates 
-        the name of the annotation and it's range
+    stops = [
+        'TAG',
+        'TAA',
+        'TGA',
+    ]
 
-        Just does start and stop codons
-        '''
-
-        stops = [
-            'TAG',
-            'TAA',
-            'TGA',
-        ]
-
-        annotations = []
-        if contig is not None and len(contig) > 3:
-            for i in xrange(0,len(contig) - 2):
-                start = i
-                end = i + 3
-                if contig[start:end] in stops:
-                    annotations.append(
+    annotations = []
+    if contig is not None and len(contig) > 3:
+        for i in xrange(0,len(contig) - 2):
+            start = i
+            end = i + 3
+            if contig[start:end] in stops:
+                annotations.append(
+                    {
+                        'seqid' : seqid,
+                        'start' : start + 1,
+                        'end'   : end,
+                        'key'   : 'stop_codon',
+                    }
+                )
+            else:
+                if contig[start:end] == 'ATG':
+                    annotations.append( 
                         {
                             'seqid' : seqid,
                             'start' : start + 1,
                             'end'   : end,
-                            'key'   : 'stop_codon',
+                            'key'   : 'start_codon',
                         }
                     )
-                else:
-                    if contig[start:end] == 'ATG':
-                        annotations.append( 
-                            {
-                                'seqid' : seqid,
-                                'start' : start + 1,
-                                'end'   : end,
-                                'key'   : 'start_codon',
-                            }
-                        )
-        sleep(5)
+    sleep(5)
 
-        return annotations
+    return annotations
 
+def annotatePalindromes(seqid, contig):
+    '''
+    Returns a list of dictionaries representing annotation data.
+    Each dictionary includes a start, end, seqid, and key that indicates 
+    the name of the annotation and it's range
+
+    This uses the lookkool package to find palindromes
+    '''
+    from lookkool import findPalindromes
+
+    palindromes = findPalindromes(contig)
+    annotations = []
+    for palindrome in palindromes:
+        annotations.append(
+            {
+                'seqid'     : seqid,
+                'start'     : palindrome[0],
+                'end'       : palindrome[1],
+                'key'       : 'palindrome',
+            }
+        )
+
+    return annotations

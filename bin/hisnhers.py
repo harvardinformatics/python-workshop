@@ -68,6 +68,7 @@ Harvard Informatics Script for Nextgen HiSeq Extraction and Reporting of Sequenc
 import os, traceback, sys, re
 import json
 import subprocess
+import time
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
@@ -85,12 +86,6 @@ def runcmd(cmd):
     stdoutstr, stderrstr = proc.communicate()
     return (proc.returncode,stdoutstr,stderrstr)
 
-
-def annotate(seqid, bases):
-    '''
-    Annotate the contig
-    '''
-    pass
 
 
 def fastqToSequenceList(fileh):
@@ -153,6 +148,7 @@ def main(argv = None):
             basecounts += '%s: %d\t' % (base,seqstr.count(base))
         print basecounts
 
+
     # Write out sequences in fasta format
     (path,ext) = os.path.splitext(fqfilename)
     fafilename = path + '.fa'
@@ -160,7 +156,6 @@ def main(argv = None):
     with open(fafilename,'w') as f:
         for seqdata in seqs:
             f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
-
 
 
     # # Run megaAssembler with fastq file input and read the output contig
@@ -183,6 +178,20 @@ def main(argv = None):
     if returncode != 0:
         raise Exception('Error running assembler with cmd %s\nstdout: %s\nstderr: %s' % (cmd,stdoutstr,stderrstr))
 
+
+    # Get the start and end time from stdout
+    from dateutil import parser
+    match = re.search(r'Start time: (.*)\n', stdoutstr, re.MULTILINE)
+    if match:
+        starttime = parser.parse(match.group(1))
+    match = re.search(r'End time: (.*)\n', stdoutstr, re.MULTILINE)
+    if match:
+        endtime = parser.parse(match.group(1))
+    if starttime and endtime:
+        delta = endtime - starttime
+        print 'Elapsed assembly time %d seconds' % delta.total_seconds()
+
+
     contigs = []
     with open(contigfilename,'r') as c:
         seqid = None
@@ -199,12 +208,28 @@ def main(argv = None):
                 contigs.append((seqid, line))
                 seqid = None
 
+
+    from ha.annotate import annotateStartStopCodons, annotatePalindromes
+
+    # Using a multiprocessing Pool
+    starttime = time.time()
+    from multiprocessing import Pool
+    numprocs = os.environ.get('ANNOTATION_PROC_NUM',2)
+    pool = Pool(numprocs)
+
     annotations = []
-    # # Using a multiprocessing Pool
-    # from multiprocessing import Pool
-    # numprocs = os.environ.get('ANNOTATION_PROC_NUM',4)
-    # pool = Pool(numprocs)
-    # annotations = pool.map(annotate,contigs)
+    results = []
+    for contig in contigs:
+        result = pool.apply_async(annotateStartStopCodons,contig)
+        results.append(result)
+        result = pool.apply_async(annotatePalindromes,contig)
+        results.append(result)
+
+    for result in results:
+        annotations += result.get()
+
+    endtime = time.time()
+    print 'Elapsed annotation time %d seconds' % int(endtime - starttime)
 
 
     # # Using MPI
@@ -220,17 +245,26 @@ def main(argv = None):
 
 
     # One at a time
-    from ha.annotate import StartStopAnnotator
-
-    annotator = StartStopAnnotator()
+    annotations = []
+    starttime = time.time()
     for seqid, contig in contigs:
-        print 'contig length: %d' % len(contig)
-        annotations += annotator.annotate(seqid, contig)
+        annotations += annotateStartStopCodons(seqid, contig)
+        annotations += annotatePalindromes(seqid, contig)
+    endtime = time.time()
+    print 'Elapsed annotation time %d seconds' % int(endtime - starttime)
 
-    print annotations
-    # # Dump annotations in JSON form
-    # with open('%s.annotations' % fqfilename, 'w') as f:
-    #     f.write(json.dumps(annotations))
+    # Make a dictionary keyed by contig name
+    annotatedcontigs = {}
+    for annotation in annotations:
+        annotatedcontigs.setdefault(annotation['seqid'],[]).append(annotation)
+
+    # Sort the annotations by start location
+    for contig,annotations in annotatedcontigs.iteritems():
+        annotatedcontigs[contig].sort(key=lambda annot: annot['start'])
+
+    # Dump annotations in JSON form
+    with open('%s.annotations' % fafilename, 'w') as f:
+        f.write(json.dumps(annotatedcontigs,indent=4))
 
 
 if __name__ == '__main__':

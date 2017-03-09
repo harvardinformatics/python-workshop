@@ -1,3 +1,4 @@
 *.pyc
 data/example.fa
 data/example.fa.contigs
+data/example.fa.annotations
