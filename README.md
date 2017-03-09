@@ -40,3 +40,53 @@ To try out the functional script follow these steps:
     $ export LD_LIBRARY_PATH=/path/to/site-packages:$LD_LIBRARY_PATH
     ```
 
+* Run hisnhers.py against the example file in the data subir
+
+   ```
+    $ cd data
+    $ ../bin/hisnhers.py example.fq
+    Length 0: 40
+    Base counts- A: 8   T: 9    C: 10   G: 13   
+    Length 1: 40
+    Base counts- A: 11  T: 5    C: 16   G: 8    
+    Length 2: 40
+    Base counts- A: 8   T: 6    C: 9    G: 17   
+    Length 3: 40
+    Base counts- A: 9   T: 8    C: 12   G: 11   
+    Length 4: 40
+    Base counts- A: 11  T: 9    C: 10   G: 10   
+    Length 5: 40
+    Base counts- A: 9   T: 6    C: 15   G: 10   
+    Length 6: 40
+    Base counts- A: 9   T: 2    C: 12   G: 17   
+    Writing to example.fa
+    Elapsed assembly time 5 seconds
+    Elapsed annotation time 7 seconds
+    Elapsed annotation time 14 seconds
+   ```
+
+* Checkout the results in example.fa.annotations
+
+    ```
+    $ head -20 example.fa.annotations
+    {
+        "contig2": [
+            {
+                "start": 2, 
+                "seqid": "contig2", 
+                "end": 5, 
+                "key": "palindrome"
+            }, 
+            {
+                "start": 3, 
+                "seqid": "contig2", 
+                "end": 5, 
+                "key": "start_codon"
+            }, 
+            {
+                "start": 31, 
+                "seqid": "contig2", 
+                "end": 34, 
+                "key": "palindrome"
+            }, 
+    ```
