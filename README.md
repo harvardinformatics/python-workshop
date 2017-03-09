@@ -21,7 +21,7 @@ To try out the functional script follow these steps:
     $ git checkout production
     ```
 
-* Setup PYTHONPATH
+* Setup PYTHONPATH (assuming you're in the pythong-workshop directory)
 
     ```
     $ export PYTHONPATH=`pwd`:$PYTHONPATH
