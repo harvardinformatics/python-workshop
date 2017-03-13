@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ -z "$@" ]]; then
+    echo 'You must supply a fastq file (e.g. megaAssembler human.fastq)'
+    exit 1
+fi
+
+if [[ ${#@} -gt 1 ]]; then
+    echo 'megaAssembler only takes one argument (e.g. megaAssembler human.fastq)'
+    exit 1
+fi
+echo "Assembling genome in $@"
+sleep 10
+echo 'Out of memory error' >&2
+exit 1
