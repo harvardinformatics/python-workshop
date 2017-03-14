@@ -92,9 +92,11 @@ def fastqToSequenceList(fileh):
     Takes a fastq file handle, returns a list tuples including
     seqid, sequence bases, and quality scores
     '''
-      seqs = []
-      seqid = bases = qscores = None
+    seqs = []
+    seqid = bases = qscores = None
 
+    if fileh.closed:
+        raise Exception('Fastq file is closed.')
 
     for line in fileh:
         line = line.strip()
@@ -120,12 +122,18 @@ def fastqToSequenceList(fileh):
     return seqs
 
 
-def main(argv = None):
+def main():
 
     # Read fastq file and report length, base counts
     seqs = []
-    fqfilename = '/n/regal/informatics/aaron/testfile.fq'
-    fastqToSequenceList(fqfilename)
+
+    if len(sys.argv) < 2:
+        print 'Must supply a file name'
+        return 1
+    fqfilename = sys.argv[1]
+
+    with open(fqfilename,'r') as f:
+        seqs = fastqToSequenceList(f)
 
     adapter_sequence = None
     for i,seqdata in enumerate(seqs):
@@ -256,4 +264,5 @@ def main(argv = None):
     # Dump annotations in JSON form
     with open('%s.annotations' % fafilename, 'w') as f:
         f.write(json.dumps(annotatedcontigs,indent=4))
-
+if __name__ == '__main__':
+    sys.exit(main())
