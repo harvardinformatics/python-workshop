@@ -95,7 +95,9 @@ def fastqToSequenceList(fileh):
       seqs = []
       seqid = bases = qscores = None
 
-
+    if fileh.closed:
+        raise Exception('fastq file is closed.')
+        
     for line in fileh:
         line = line.strip()
         if line == '':
