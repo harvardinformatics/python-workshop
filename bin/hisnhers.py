@@ -99,10 +99,6 @@ def fastqToSequenceList(fileh):
         raise Exception('Fastq file is closed.')
 
     for line in fileh:
-        line = line.strip()
-        if line == '':
-            continue
-
         if line.startswith('@'):
             # It's a new record
             if seqid is not None:
