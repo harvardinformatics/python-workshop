@@ -69,7 +69,6 @@ import os, traceback, sys, re
 import json
 import subprocess
 import time
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
 # Logging setup
@@ -93,8 +92,8 @@ def fastqToSequenceList(fileh):
     Takes a fastq file handle, returns a list tuples including
     seqid, sequence bases, and quality scores
     '''
-    seqs = []
-    seqid = bases = qscores = None
+      seqs = []
+      seqid = bases = qscores = None
 
 
     for line in fileh:
@@ -123,20 +122,12 @@ def fastqToSequenceList(fileh):
 
 def main(argv = None):
 
-    # Setup argument parser
-    parser = ArgumentParser(description='Some code', formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
-    parser.add_argument('FASTQ_FILE',help='Fastq file')
-    parser.add_argument('--skip-adapter', dest='adapter_sequence', help='Skip 20 bases of adapter sequence.')
-    args = parser.parse_args()
-
     # Read fastq file and report length, base counts
     seqs = []
-    fqfilename = args.FASTQ_FILE
-    with open(fqfilename,'r') as f:
-        seqs = fastqToSequenceList(f)
+    fqfilename = '/n/regal/informatics/aaron/testfile.fq'
+    fastqToSequenceList(fqfilename)
 
-    adapter_sequence = args.adapter_sequence
+    adapter_sequence = None
     for i,seqdata in enumerate(seqs):
         seqstr = seqdata[1]
         if adapter_sequence:
@@ -266,6 +257,3 @@ def main(argv = None):
     with open('%s.annotations' % fafilename, 'w') as f:
         f.write(json.dumps(annotatedcontigs,indent=4))
 
-
-if __name__ == '__main__':
-    sys.exit(main())
