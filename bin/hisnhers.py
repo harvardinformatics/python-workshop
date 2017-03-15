@@ -71,22 +71,6 @@ import subprocess
 import time
 
 
-# Logging setup
-import logging
-
-DEBUG = os.environ.get("HISNHERS_DEBUG",0)
-
-
-def runcmd(cmd):
-    '''
-    Execute a command and return stdout, stderr, and the return code
-    '''
-    proc = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    stdoutstr, stderrstr = proc.communicate()
-    return (proc.returncode,stdoutstr,stderrstr)
-
-
-
 def fastqToSequenceList(fileh):
     '''
     Takes a fastq file handle, returns a list tuples including
@@ -125,19 +109,6 @@ def main(argv = None):
     fqfilename = '/n/regal/informatics/aaron/testfile.fq'
     fastqToSequenceList(fqfilename)
 
-    adapter_sequence = None
-    for i,seqdata in enumerate(seqs):
-        seqstr = seqdata[1]
-        if adapter_sequence:
-            seqstr = seqstr[20:]
-
-        print 'Length %d: %d' % (i,len(seqstr))
-        basecounts = 'Base counts- '
-        for base in ['A','T','C','G']:
-            basecounts += '%s: %d\t' % (base,seqstr.count(base))
-        print basecounts
-
-
     # Write out sequences in fasta format
     (path,ext) = os.path.splitext(fqfilename)
     fafilename = path + '.fa'
@@ -162,23 +133,7 @@ def main(argv = None):
     ]
 
     cmd = ' '.join(assemblerargs)
-    returncode, stdoutstr, stderrstr = runcmd(cmd)
-
-    if returncode != 0:
-        raise Exception('Error running assembler with cmd %s\nstdout: %s\nstderr: %s' % (cmd,stdoutstr,stderrstr))
-
-
-    # Get the start and end time from stdout
-    from dateutil import parser
-    match = re.search(r'Start time: (.*)\n', stdoutstr, re.MULTILINE)
-    if match:
-        starttime = parser.parse(match.group(1))
-    match = re.search(r'End time: (.*)\n', stdoutstr, re.MULTILINE)
-    if match:
-        endtime = parser.parse(match.group(1))
-    if starttime and endtime:
-        delta = endtime - starttime
-        print 'Elapsed assembly time %d seconds' % delta.total_seconds()
+    os.system('%s > /dev/null 2> /dev/null')
 
 
     contigs = []
