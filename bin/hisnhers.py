@@ -153,38 +153,22 @@ def main():
             f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
 
 
-    # # Run megaAssembler with fastq file input and read the output contig
-    # contigfilename = '%s.contigs' % fqfilename
-    # assemblerargs = [
-    #     'megaAssembler',
-    #     fqfilename,
-    # ]
-
-    # Run hyperAssembler with fastq file input and read the output contig
+    # Run megaAssembler with fastq file input and read the output contig
     contigfilename = '%s.contigs' % fafilename
     assemblerargs = [
-        'hyperAssembler',
+        'megaAssembler',
         fafilename,
     ]
 
+    # # Run hyperAssembler with fastq file input and read the output contig
+    # contigfilename = '%s.contigs' % fafilename
+    # assemblerargs = [
+    #     'hyperAssembler',
+    #     fafilename,
+    # ]
+
     cmd = ' '.join(assemblerargs)
-    returncode, stdoutstr, stderrstr = runcmd(cmd)
-
-    if returncode != 0:
-        raise Exception('Error running assembler with cmd %s\nstdout: %s\nstderr: %s' % (cmd,stdoutstr,stderrstr))
-
-
-    # Get the start and end time from stdout
-    from dateutil import parser
-    match = re.search(r'Start time: (.*)\n', stdoutstr, re.MULTILINE)
-    if match:
-        starttime = parser.parse(match.group(1))
-    match = re.search(r'End time: (.*)\n', stdoutstr, re.MULTILINE)
-    if match:
-        endtime = parser.parse(match.group(1))
-    if starttime and endtime:
-        delta = endtime - starttime
-        print 'Elapsed assembly time %d seconds' % delta.total_seconds()
+    os.system('%s >/dev/null 2>/dev/null' % cmd)
 
 
     contigs = []
@@ -203,8 +187,10 @@ def main():
                 contigs.append((seqid, line))
                 seqid = None
 
+    if len(contigs) == 0:
+        raise Exception('No contigs in %s' % contigfilename)
 
-    from ha.annotate import annotateStartStopCodons, annotatePalindromes
+    from ha.annotate import annotateStartStopCodons
 
     # Using a multiprocessing Pool
     starttime = time.time()
@@ -216,8 +202,6 @@ def main():
     results = []
     for contig in contigs:
         result = pool.apply_async(annotateStartStopCodons,contig)
-        results.append(result)
-        result = pool.apply_async(annotatePalindromes,contig)
         results.append(result)
 
     for result in results:
@@ -244,7 +228,6 @@ def main():
     starttime = time.time()
     for seqid, contig in contigs:
         annotations += annotateStartStopCodons(seqid, contig)
-        annotations += annotatePalindromes(seqid, contig)
     endtime = time.time()
     print 'Elapsed serial annotation time %d seconds' % int(endtime - starttime)
 
