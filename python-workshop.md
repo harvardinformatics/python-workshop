@@ -49,17 +49,18 @@
 * Learn python by debugging existing code
 * See common errors and their solutions
 * Learn how to search for programming solutions
-* Odyssey-specific lessions, including Anaconda clones and MPI code
+* Odyssey-specific lessions, including Anaconda clones
 
 ---
 
 # Covered subjects
 *Not necessarily in this order*
 
-* Structure (tuples, dicts, sets, functions, objects)
-* Interacting with your environment (os, environment variables, files, executing other tools, script arguments)
+* Structure (if/then, for, tuples, arrays, dicts, functions, objects)
+* Regular expressions, dates
+* Interacting with your environment (os, environment variables, files, executing other tools)
 * Packages and virtual environments (pip, python setup.py, virtualenv, Anaconda, clones)
-* Parallel programming (no threading, multiprocess, mpi4py)
+* Parallel programming (multiprocess)
 
 ---
 
@@ -84,7 +85,7 @@
 * `bin/hisnhers.py` - The broken script
 * `bin/megaAssembler` - The high memory assembler
 * `bin/hyperAssembler` - The fast, efficient assembler
-* `hi/annotate.py` - The annotation module
+* `ha/annotate.py` - The annotation module
 * `https://github.com/harvardinformatics/lookkool.git` - The palindrome finder
 
 ---
@@ -97,7 +98,7 @@ Broken script that attempts to
 4. annotate the contigs
 
 
-# `hi/annotate.py`
+# `ha/annotate.py`
 Annotation module that will be called by `hisnhers.py` serially and, then, in parallel
 
 ---
@@ -143,7 +144,25 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 
 ---
 # `imports`
-* A name (function, class, variable) cannot be used unless it is imported or defined (or a *built-in*)
+* A name (function, class, variable, module) cannot be used unless it is imported, defined, or a *built-in*
+* You can import a module (which is a file) and use it's named things
+   ```
+   [akitzmiller@holy2a ~]$ ls /usr/lib64/python2.7/os.py
+   /usr/lib64/python2.7/os.py
+   ```
+   ```python
+   >>> import os
+   >>> os.makedirs('/tmp/a/j/k')
+   ```
+* or you can import something from a module
+  ```
+   [akitzmiller@holy2a ~]$ grep "def makedirs" /usr/lib64/python2.7/os.py
+   def makedirs(name, mode=0777):
+  ```
+  ```python
+   >>> from os import makedirs
+   >>> makedirs('/tmp/a/j/k')
+  ```
 * Imports are based on paths, where path separators, `/`, are converted to periods
    ```
    [akitzmiller@holy2a python-workshop]$ find ha -name "annotate.py"
@@ -213,6 +232,8 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     AttributeError: 'str' object has no attribute 'closed'
    ```
 * Stack trace shows you where to look
+---
+
 ---
 # File processing with context managers
 * `f = open()`returns a file handle
