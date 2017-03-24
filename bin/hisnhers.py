@@ -134,6 +134,7 @@ def main(argv = None):
 
     # Read fastq file and report length, base counts
     seqs = []
+
     fqfilename = args.FASTQ_FILE
     with open(fqfilename,'r') as f:
         seqs = fastqToSequenceList(f)
