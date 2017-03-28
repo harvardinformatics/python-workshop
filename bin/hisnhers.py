@@ -65,7 +65,7 @@ Harvard Informatics Script for Nextgen HiSeq Extraction and Reporting of Sequenc
 
 '''
 
-import os, traceback, sys, re
+import os, traceback, re
 import json
 import subprocess
 import time
