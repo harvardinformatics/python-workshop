@@ -127,7 +127,7 @@ def main(argv = None):
 
 
     cmd = ' '.join(assemblerargs)
-    os.system('%s > /dev/null 2> /dev/null')
+    os.system('%s > /dev/null 2> /dev/null'  % cmd)
 
 
     contigs = []
