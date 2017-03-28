@@ -136,6 +136,8 @@ def main(argv = None):
     seqs = []
 
     fqfilename = args.FASTQ_FILE
+    if not os.path.exists(fqfilename):
+        raise Exception('File %f does not exist' % fqfilename)
     with open(fqfilename,'r') as f:
         seqs = fastqToSequenceList(f)
 
