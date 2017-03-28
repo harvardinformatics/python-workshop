@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 
 '''
 hisnhers.py
@@ -113,24 +113,18 @@ def main(argv = None):
     (path,ext) = os.path.splitext(fqfilename)
     fafilename = path + '.fa'
     print 'Writing to %s' % fafilename
-    with open(fafilename,'w') as f:
-        for seqdata in seqs:
-            f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
+    f = open(fafilename,'w')
+    for seqdata in seqs:
+        f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
 
 
-    # # Run megaAssembler with fastq file input and read the output contig
-    # contigfilename = '%s.contigs' % fqfilename
-    # assemblerargs = [
-    #     'megaAssembler',
-    #     fqfilename,
-    # ]
-
-    # Run hyperAssembler with fastq file input and read the output contig
-    contigfilename = '%s.contigs' % fafilename
+    # Run megaAssembler with fastq file input and read the output contig
+    contigfilename = '%s.contigs' % fqfilename
     assemblerargs = [
-        'hyperAssembler',
-        fafilename,
+        'megaAssembler',
+        fqfilename,
     ]
+
 
     cmd = ' '.join(assemblerargs)
     os.system('%s > /dev/null 2> /dev/null')
