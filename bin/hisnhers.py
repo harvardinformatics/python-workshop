@@ -161,11 +161,7 @@ def main(argv = None):
     # Make a dictionary keyed by contig name
     annotatedcontigs = {}
     for annotation in annotations:
-        annotatedcontigs.setdefault(annotation['seqid'],[]).append(annotation)
-
-    # Sort the annotations by start location
-    for contig,annotations in annotatedcontigs.iteritems():
-        annotatedcontigs[contig].sort(key=lambda annot: annot['start'])
+        annotatedcontigs[annotation['seqid']] = annotation
 
     # Dump annotations in JSON form
     with open('%s.annotations' % fafilename, 'w') as f:
