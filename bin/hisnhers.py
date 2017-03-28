@@ -149,39 +149,6 @@ def main(argv = None):
 
     from ha.annotate import annotateStartStopCodons, annotatePalindromes
 
-    # Using a multiprocessing Pool
-    starttime = time.time()
-    from multiprocessing import Pool
-    numprocs = os.environ.get('ANNOTATION_PROC_NUM',2)
-    pool = Pool(numprocs)
-
-    annotations = []
-    results = []
-    for contig in contigs:
-        result = pool.apply_async(annotateStartStopCodons,contig)
-        results.append(result)
-        result = pool.apply_async(annotatePalindromes,contig)
-        results.append(result)
-
-    for result in results:
-        annotations += result.get()
-
-    endtime = time.time()
-    print 'Elapsed parallel annotation time %d seconds' % int(endtime - starttime)
-
-
-    # # Using MPI
-    # from mpi4py import MPI
-    # comm = MPI.COMM_WORLD
-    # # size = comm.Get_size()
-    # # rank = comm.Get_rank()
-    
-    # contigs = comm.scatter(contigs,root=0)
-    # annots = annotate(contigs)
-
-    # annotations = comm.gather(annots,root=0)
-
-
     # One at a time
     annotations = []
     starttime = time.time()
