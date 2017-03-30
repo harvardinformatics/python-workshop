@@ -57,7 +57,7 @@
 # Covered subjects
 *Not necessarily in this order*
 
-* Structure (if/then, for, tuples, arrays, dicts, functions, objects)
+* Structure (if/then, for, tuples, arrays, dicts, functions)
 * Regular expressions, dates
 * Interacting with your environment (os, environment variables, files, executing other tools)
 * Packages and virtual environments (pip, python setup.py, virtualenv, Anaconda, clones)
@@ -207,7 +207,7 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    
    # Interact with environment variables
    >>> os.environ['PATH']
-   '/usr/local/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/opt/dell/srvadmin/bin:/n/home_rc/akitzmiller/bin'
+   '/usr/local/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin'
    >>> os.system('which module-query')
    /usr/local/bin/module-query
    0
@@ -295,7 +295,7 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 
 ---
 # Lists and tuples
-* 0 - indexed list of data items that is either modifiable (lists) or unmodifiable (tuples)
+* 0 indexed list of data items that is either modifiable (lists) or unmodifiable (tuples)
    ```python
     >>> bases = ['A','T','C','G']
     >>> bases[1]
@@ -312,8 +312,6 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     AttributeError: 'tuple' object has no attribute 'append'
 
    ```
-
-
 ---
 # Lists and tuples
 * Iteration
@@ -394,11 +392,10 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
         print basecountline
    ```
 ---
-# Fix contigs file error
+# Contigs file error
    ```bash
    [akitzmiller@holy2a python-workshop]$ ./bin/hisnhers.py data/example.fq
    Writing to data/example.fa
-   sh: line 0: fg: no job control
    Traceback (most recent call last):
      File "./hisnhers.py", line 210, in <module>
        sys.exit(main())
@@ -997,20 +994,93 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     lkjdsa
     uiop
    ```
-   
+---
+# Parallel Python - Multiprocessing Pool
+* `Pool.map`does not work if you have more than one argument, so iterate through and use`apply_async`
+* You'll need to "get" the return value from the result object(s)
+   ```python
+    >>> from multiprocessing import Pool
+    >>> import os
+    >>> def greet(name,message):
+    ...     os.system('echo "Hi %s, %s" && sleep 10' % (name,message))
+    ...     return '%s was greeted' % name
+    ... 
+    >>> greetings = [
+    ...     ('Aaron',"What's up?"),
+    ...     ('Bert',"Where's Ernie?"),
+    ...     ('Donald',"What're you thinking?"),
+    ...     ('folks','Chill!'),
+    ... ]
+    >>> numprocs = os.environ.get('NUMPROCS',3)
+    >>> pool = Pool(numprocs)
+    >>> results = []
+    >>> for greeting in greetings:
+    ...    result = pool.apply_async(greet,greeting)
+    ...    results.append(result)
+    Hi Bert, Where's Ernie?
+    Hi Aaron, What's up?
+    Hi Donald, What're you thinking?
+    Hi folks, Chill!
+    >>> for result in results:
+    ...    print result.get()
+    Aaron was greeted
+    Bert was greeted
+    Donald was greeted
+    folks was greeted
+   ```
 ---
 # Analyze the contigs using a multiprocessing pool. Compare the elapsed time with the for loop version.
 
 ---
-# Python dictionaries are your friend
-* A dictionary is like a list, but can be indexed by non-integers (AKA hash map)
 
-* Element order is random
+# Analyze contigs with a multiprocessing pool.
+   ```python
+    starttime = time.time()
+    from multiprocessing import Pool
+    numprocs = os.environ.get('ANNOTATION_PROC_NUM',2)
+    pool = Pool(numprocs)
+
+    annotations = []
+    results = []
+    for contig in contigs:
+        result = pool.apply_async(annotateStartStopCodons,contig)
+        results.append(result)
+        result = pool.apply_async(annotatePalindromes,contig)
+        results.append(result)
+
+    for result in results:
+        annotations += result.get()
+
+    endtime = time.time()
+   ```
 
 ---
-# Let Python write JSON for you
+# JSON output file is missing some annotations
 
-
+---
+# Python dictionaries
+* A dictionary is like a list, but can be indexed by non-integers (AKA hash map)
+* Elements are not necessarily in the order you think
+    ```python
+    >>> basecounts = { 'A' : 230, 'T' : 120, 'C' : 999, 'G' : 100 }
+    >>> for base, count in basecounts.iteritems():
+    ...     print '%s: %d' % (base,count)
+    ... 
+    A: 230
+    C: 999
+    T: 120
+    G: 100
+    ```
+ * OrderedDict is available in Python 2.7 and you can order output by sorting keys
+   ```python
+   >>> for base in sorted(basecounts.keys()):
+   ...     print '%s: %d' % (base,basecounts[base])
+   ... 
+   A: 230
+   C: 999
+   G: 100
+   T: 120
+   ```
 ---
 # Python can be used to submit Slurm jobs
 * Use a "heredoc" and format method to write a Slurm script
@@ -1038,5 +1108,18 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    ```
 ---
 * Use a subprocess to submit and monitor your job
+* Catch the job id from sbatch output
+   ```python
+   >>> from subprocess import Popen,PIPE
+   >>> def submit(filename):
+   ...     proc = Popen('sbatch %s' % filename,shell=True,stdout=PIPE,stderr=PIPE)
+   ...     stdout,stderr = proc.communicate()
+   ...     return stdout.strip('Submitted batch job ')
+   ... 
+   >>>
+   ```
+*  and use it to check sacct
+   ```python
+   ```
 
 ---
