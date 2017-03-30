@@ -57,7 +57,7 @@
 # Covered subjects
 *Not necessarily in this order*
 
-* Structure (if/then, for, tuples, arrays, dicts, functions, objects)
+* Structure (if/then, for, tuples, arrays, dicts, functions)
 * Regular expressions, dates
 * Interacting with your environment (os, environment variables, files, executing other tools)
 * Packages and virtual environments (pip, python setup.py, virtualenv, Anaconda, clones)
@@ -207,7 +207,7 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    
    # Interact with environment variables
    >>> os.environ['PATH']
-   '/usr/local/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/opt/dell/srvadmin/bin:/n/home_rc/akitzmiller/bin'
+   '/usr/local/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin'
    >>> os.system('which module-query')
    /usr/local/bin/module-query
    0
@@ -242,6 +242,9 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
         return 1
         
     fqfilename = sys.argv[1]
+    if not os.path.exists(fqfilename):
+        raise Exception('File %f does not exist' % fqfilename)
+
     with open(fqfilename,'r') as f:
         seqs = fastqToSequenceList(f)
 
@@ -272,11 +275,27 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
         print 'Must supply a file name'
         return 1
     fqfilename = sys.argv[1]
+   ```
+# or use argparse to handle real arguments
+   ```python
+    from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
+    parser = ArgumentParser(description='Python workshop tool', formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('FASTQ_FILE',help='Fastq file')
+    args = parser.parse_args()
+
+    fqfilename = args.FASTQ_FILE
    ```
 ---
+# Add sequence length and base counts
+* Print out base frequencies and sequence length for each sequence:
+   ```
+   Sequence 1 Length: 106 A: 4, T: 4, C: 4, G: 4
+   ```
+
+---
 # Lists and tuples
-* 0 - indexed list of data items that is either modifiable (lists) or unmodifiable (tuples)
+* 0 indexed list of data items that is either modifiable (lists) or unmodifiable (tuples)
    ```python
     >>> bases = ['A','T','C','G']
     >>> bases[1]
@@ -293,8 +312,6 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     AttributeError: 'tuple' object has no attribute 'append'
 
    ```
-
-
 ---
 # Lists and tuples
 * Iteration
@@ -359,12 +376,38 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 
    ```
 ---
-# Iterate through the sequence records and generate base counts
+# Add sequence length and base counts
 
 ---
-# Running commands with `os.system()`
+
+# Sequence length and base count
+   ```python
+    for i,seqdata in enumerate(seqs):
+        seqstr = seqdata[1]
+        seqlen = len(seqstr)
+		
+        basecountline = 'Sequence %d Length: %d ' % (i,seqlen)
+        for base in ['A','T','C','G']:
+            basecountline += '%s: %d ' % (base,seqstr.count(base))
+        print basecountline
+   ```
+---
+# Contigs file error
+   ```bash
+   [akitzmiller@holy2a python-workshop]$ ./bin/hisnhers.py data/example.fq
+   Writing to data/example.fa
+   Traceback (most recent call last):
+     File "./hisnhers.py", line 210, in <module>
+       sys.exit(main())
+     File "./hisnhers.py", line 135, in main
+       with open(contigfilename,'r') as c:
+   IOError: [Errno 2] No such file or directory: 'data/example.fq.contigs'
+   [akitzmiller@holy2a python-workshop]$ 
+   ```
+---
+# Running commands with`os.system()`
 * There are about a dozen Python functions for running a command line tool, but only two of them are worth using.
-* `os.system()` runs a command using the shell and returns only the return code. *stdout and stderr, if needed, must be redirected*.
+* `os.system()`runs a command using the shell and returns only the return code. stdout and stderr are sent to the console.  If you need to capture the contents, they must be redirected.
    ```python
    >>> os.system("echo 'hello' > hello.out")
    0
@@ -374,7 +417,7 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    ```
 ---
 # Running commands with `Popen()`
-* `subprocess.Popen` supports all available options for synchronous (and asynchronous) execution
+* `subprocess.Popen` supports all available options for synchronous execution
    ```python
    >>> import subprocess
    >>> proc = subprocess.Popen(
@@ -393,17 +436,82 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 # Running commands
 * Avoid bash shell processing if you need to
    ```python
-   >>> args = ['/usr/bin/sed','-i','-e','s/$PATH/${PATH}/','/n/home_rc/ajk/path with some spaces in it']
+   >>> args = ['/usr/bin/sed','-i','-e','s/$PATH/${PATH}/','/home/path with some spaces in it']
    >>> proc = subprocess.Popen(args,shell=False)
    ```
 * Write to stdin
+   ```python
+    >>> lyrics = '''
+    ... Sundown, you better take care
+    ... If I find you been creepin
+    ... Down my back stair
+    ... '''
+    >>> args = ['/bin/grep','been creepin']
+    >>> from subprocess import PIPE,Popen
+    >>> proc = Popen(args,shell=False,stdin=PIPE,stdout=PIPE,stderr=PIPE)
+    >>> stdout,stderr = proc.communicate(input=lyrics)
+    >>> stdout
+    'If I find you been creepin\n'
+    >>> 
+   ```
+---
+# Running commands
+* You may need to alter the environment of the subprocess
+* Loading modules can work with`&&`
+   ```python
+   proc = Popen('module load bowtie2 && bowtie2 -1 m1.in.bz2 -2 m2.in.bz2',shell=True)
+   ```
+* You can set environment values in the parent
+   ```python
+   >>> path = os.environ.get('PATH','')
+   >>> os.environ['PATH'] = '/n/sw/fasrcsw/apps/Core/bowtie2/2.3.1-fasrc01/bin:%s' % path
+   >>> proc = Popen('bowtie2 -1 m1.in.bz2 -2 m2.in.bz2',shell=True)
+   ```
+* or in the subprocess itself
+   ```python
+   >>> path = os.environ.get('PATH','')
+   >>> env = {'PATH' : '/n/sw/fasrcsw/apps/Core/bowtie2/2.3.1-fasrc01/bin:%s' % path}
+   >>> proc = Popen('bowtie2 -1 m1.in.bz2 -2 m2.in.bz2',shell=True,env=env)
+   ```
+
 ---
 # Replace the call to megaAssembler with a Popen-based call to hyperAssembler.  
 # Capture return code, stdout, and stderr 
 ---
+# Call to hyperAssembler
+
+   ```python
+    import subprocess
+    
+    def runcmd(cmd):
+        '''
+        Execute a command and return stdout, stderr, and the return code
+        '''
+        proc = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        stdoutstr, stderrstr = proc.communicate()
+        return (proc.returncode,stdoutstr,stderrstr)
+
+    # Run hyperAssembler with fastq file input and read the output contig
+    contigfilename = '%s.contigs' % fafilename
+    assemblerargs = [
+        'hyperAssembler',
+        fafilename,
+    ]
+
+    cmd = ' '.join(assemblerargs)
+    returncode, stdoutstr, stderrstr = runcmd(cmd)
+
+    if returncode != 0:
+        raise Exception('Error running assembler with cmd %s\nstdout: %s\nstderr: %s' % (cmd,stdoutstr,stderrstr))
+ 
+   ```
+---
+# Capture stdout and parse date information
+---
 # Regular expressions
 * <span class="google">Google: python regular expressions</span>
-* Use a "raw" string to avoid backslash proliferation
+* Python regular expressions are a full set of processing options (character classes, capture groups, quantifiers, etc)
+* Match the beginning of your string.  Use a "raw" string to avoid backslash proliferation
    ```python
    >>> teststr = 'w00t!'
    >>> import re
@@ -459,20 +567,10 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    >>> nextmonth.strftime('%d/%m/%Y')
    '03/03/2017'
    ```
----
-# Date handling
 * `strptime`parses dates according to a strict specification
    ```python
    >>> datetime.strptime('03/03/2017','%d/%m/%Y')
    datetime.datetime(2017, 3, 3, 0, 0)
-   
-   >>> datetime.strptime('March 3, 2017','%d/%m/%Y')
-   Traceback (most recent call last):
-     File "<stdin>", line 1, in <module>
-     File "lib/python2.7/_strptime.py", line 332, in _strptime
-       (data_string, format))
-   ValueError: time data 'March 3, 2017' does not match format '%d/%m/%Y'
-
    ```
 * `python-dateutil` package parses whatever you throw at it
    ```python
@@ -482,6 +580,46 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    
    >>> parser.parse('March 3, 2017')
    datetime.datetime(2017, 3, 3, 0, 0)
+   ```
+---
+# Get the start and end dates from the hyperAssembler output and calculate the time
+   ```
+   Assembling genome in data/example.fa
+   Start time: 04:01:00 PM
+   280
+   140
+   Finished assembling data/example.fa.  Writing contigs into data/example.fa.contigs.
+   End time: 04:01:05 PM
+
+   ```
+---
+# Get the start and end dates
+   ```python
+    # Get the start and end time from stdout
+    from dateutil import parser
+    match = re.search(r'Start time: (.*)\n', stdoutstr, re.MULTILINE)
+    if match:
+        starttime = parser.parse(match.group(1))
+    match = re.search(r'End time: (.*)\n', stdoutstr, re.MULTILINE)
+    if match:
+        endtime = parser.parse(match.group(1))
+    if starttime and endtime:
+        delta = endtime - starttime
+        print 'Elapsed assembly time %d seconds' % delta.total_seconds()
+
+   ```
+---
+
+# Missing lookkool module
+   ```bash
+   Traceback (most recent call last):
+   File "./bin/hisnhers.py", line 179, in <module>
+     sys.exit(main())
+   File "./bin/hisnhers.py", line 160, in main
+     annotations += annotatePalindromes(seqid, contig)
+   File "./ha/annotate.py", line 66, in annotatePalindromes
+     from lookkool import findPalindromes
+ ImportError: No module named lookkool
    ```
 ---
 # Python packages
@@ -807,7 +945,11 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
  
     ```
 ---
-* A newer compiler may help, as it may the correct support libraries
+# Fix the missing lookkool module by installing from the Harvard Informatics github repository into an Anaconda clone
+
+   ```
+   pip install git+https://github.com/harvardinformatics/lookkool.git
+   ```
 
 ---
 # Parallel Python - Multiprocessing
@@ -852,3 +994,132 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     lkjdsa
     uiop
    ```
+---
+# Parallel Python - Multiprocessing Pool
+* `Pool.map`does not work if you have more than one argument, so iterate through and use`apply_async`
+* You'll need to "get" the return value from the result object(s)
+   ```python
+    >>> from multiprocessing import Pool
+    >>> import os
+    >>> def greet(name,message):
+    ...     os.system('echo "Hi %s, %s" && sleep 10' % (name,message))
+    ...     return '%s was greeted' % name
+    ... 
+    >>> greetings = [
+    ...     ('Aaron',"What's up?"),
+    ...     ('Bert',"Where's Ernie?"),
+    ...     ('Donald',"What're you thinking?"),
+    ...     ('folks','Chill!'),
+    ... ]
+    >>> numprocs = os.environ.get('NUMPROCS',3)
+    >>> pool = Pool(numprocs)
+    >>> results = []
+    >>> for greeting in greetings:
+    ...    result = pool.apply_async(greet,greeting)
+    ...    results.append(result)
+    Hi Bert, Where's Ernie?
+    Hi Aaron, What's up?
+    Hi Donald, What're you thinking?
+    Hi folks, Chill!
+    >>> for result in results:
+    ...    print result.get()
+    Aaron was greeted
+    Bert was greeted
+    Donald was greeted
+    folks was greeted
+   ```
+---
+# Analyze the contigs using a multiprocessing pool. Compare the elapsed time with the for loop version.
+
+---
+
+# Analyze contigs with a multiprocessing pool.
+   ```python
+    starttime = time.time()
+    from multiprocessing import Pool
+    numprocs = os.environ.get('ANNOTATION_PROC_NUM',2)
+    pool = Pool(numprocs)
+
+    annotations = []
+    results = []
+    for contig in contigs:
+        result = pool.apply_async(annotateStartStopCodons,contig)
+        results.append(result)
+        result = pool.apply_async(annotatePalindromes,contig)
+        results.append(result)
+
+    for result in results:
+        annotations += result.get()
+
+    endtime = time.time()
+   ```
+
+---
+# JSON output file is missing some annotations
+
+---
+# Python dictionaries
+* A dictionary is like a list, but can be indexed by non-integers (AKA hash map)
+* Elements are not necessarily in the order you think
+    ```python
+    >>> basecounts = { 'A' : 230, 'T' : 120, 'C' : 999, 'G' : 100 }
+    >>> for base, count in basecounts.iteritems():
+    ...     print '%s: %d' % (base,count)
+    ... 
+    A: 230
+    C: 999
+    T: 120
+    G: 100
+    ```
+ * OrderedDict is available in Python 2.7 and you can order output by sorting keys
+   ```python
+   >>> for base in sorted(basecounts.keys()):
+   ...     print '%s: %d' % (base,basecounts[base])
+   ... 
+   A: 230
+   C: 999
+   G: 100
+   T: 120
+   ```
+---
+# Python can be used to submit Slurm jobs
+* Use a "heredoc" and format method to write a Slurm script
+   ```python
+   >>> script = '''#!/bin/bash
+   ... #SBATCH -p {partition}
+   ... #SBATCH -t {time}
+   ... #SBATCH --mem {mem}
+   ... #SBATCH -n {cores}
+   ... #SBATCH -N {nodes}
+   ... 
+   ... {cmd}
+   ... '''.format(partition='gpu',time='100',mem='500',cores='1',nodes='1',cmd='hostname')
+   >>> print script
+   #!/bin/bash
+   #SBATCH -p serial_requeue
+   #SBATCH -t 1-0:00
+   #SBATCH --mem 1000
+   #SBATCH -n 1
+   #SBATCH -N 1
+   
+   hostname
+   
+   >>> 
+   ```
+---
+* Use a subprocess to submit and monitor your job
+* Catch the job id from sbatch output
+   ```python
+   >>> from subprocess import Popen,PIPE
+   >>> def submit(filename):
+   ...     proc = Popen('sbatch %s' % filename,shell=True,stdout=PIPE,stderr=PIPE)
+   ...     stdout,stderr = proc.communicate()
+   ...     return stdout.strip('Submitted batch job ')
+   ... 
+   >>>
+   ```
+*  and use it to check sacct
+   ```python
+   ```
+
+---
