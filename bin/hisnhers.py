@@ -4,65 +4,6 @@
 hisnhers.py
 Harvard Informatics Script for Nextgen HiSeq Extraction and Reporting of Sequences
 
- Starts with wrong chmod and bad shebang
- The __main__ bit at the end is missing.
-
- Has a bad indent on a function
-
- Read the fastq files into a list of sequences
- The function for converting them into a list of sequences exists, but it requires 
- a file handle.  Script has file path hard coded to a file that doesn't exist. 
- Empty lines are returned as list element. Whitespace is not stripped.
-
- Exercise: Write a file-exists check and exit if it fails; use Google to find the answer
- Exercise: Use a 'with' block to get a file handle
- Exercise: Iterate over the sequences and report the length.  Add the sequence iteration key
- Exercise: Iterate over the sequences and report the A, T, C, and G counts.  Use string formatting. Make sure you've done "lower()"
- Exercise: Report length and counts after skipping the adapter in the first 20 bases
- Exercise: Get the file name as a command line argument
- Exercise: Fix the conversion function to create a tuple with the sequence id, bases, and quality scores
- Exercise: Fix the conversion function to get rid of empty lines and strip whitespace.
-
-
- Shells out to "megaAssembler", redirecting stderr to /dev/null,  
- and attempts to read the output file which fails.
- Turns out it is reporting "out of memory" on stderr and is missing a required argument.
- Useful information is written on standard out in addition to writing an assembled contig to a file.
-
- Exercise: Wrap file open in an exists check and a context manager block.
- Exercise: Use args array and "join" to make the command line
- Exercise: Write a popen.subprocess.  Report the return code, stdout, and stderr.  Exit with stderr message if
- return code is not 0
- Exercise: Replace megaAssembler with "hyperAssembler"
- Exercise: Parse the start time and end time reported by hyperAssembler into a python datetime and get the delta
-
- Interlude for PyPi, packages, virtual environments
- Exercise: Google install python dateutil.  Try it.
- Exercise: Create an Anaconda clone.  Try to install python-dateutil with pip; --upgrade.
- 
-
- Reads hyperAssembler output, some space / tab-delimited lines, sorts them and prints them out.
-
- Exercise: split lines into elements with the "split" function and create a dictionary keyed by ??
- Exercise: created "sorted" dict using sorted and passing a sort function / lambda
- Exercise: use OrderedDict because you can't guarantee key sort order in a regular dict
- Exercise: convert split, sort, and dict creation into a dictionary comprehension with an OrderedDict?
-
-
- Import the annotator module and annotate each contig. 
- Exercise (repl): Use dir() on the annotation module to find out what functions are there.  Distinguish between
- those with underbars and those without
- Exercise (repl): Use help() to get the docstrings
-
- Convert annotation to parallel processing
- Exercise: Use multiprocessing to do a pool of parallel annotations
-
- Convert annotation to MPI
- Exercise: conda install mpi4py, test (it should fail); conda remove mpi4py
- Exercise: load gcc / mpi module, do pip install of mpi4py;
-
- Exercise: Use mpi4py to make MPI code.  Use a try block to catch import errors and default to multiprocessing.
-
 '''
 
 import os, traceback, re
@@ -122,7 +63,7 @@ def main(argv = None):
     contigfilename = '%s.contigs' % fqfilename
     assemblerargs = [
         'megaAssembler',
-        fqfilename,
+        fafilename,
     ]
 
 
