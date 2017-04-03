@@ -59,8 +59,8 @@ def main(argv = None):
         f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
 
 
-    # Run megaAssembler with fastq file input and read the output contig
-    contigfilename = '%s.contigs' % fqfilename
+    # Run megaAssembler with fasta file input and read the output contig
+    contigfilename = '%s.contigs' % fafilename
     assemblerargs = [
         'megaAssembler',
         fafilename,
