@@ -3,12 +3,12 @@
 # Read a fasta file and concatenate all of the sequences into a single contig.
 
 if [[ -z "$@" ]]; then
-    echo 'You must supply a fasta file (e.g. megaAssembler human.fastq)'
+    echo 'You must supply a fasta file (e.g. hyperAssembler human.fastq)'
     exit 1
 fi
 
 if [[ ${#@} -gt 1 ]]; then
-    echo 'hyperAssembler only takes one argument (e.g. megaAssembler human.fasta)'
+    echo 'hyperAssembler only takes one argument (e.g. hyperAssembler human.fasta)'
     exit 1
 fi
 echo "Assembling genome in $@"

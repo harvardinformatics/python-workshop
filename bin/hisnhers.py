@@ -102,7 +102,7 @@ def main(argv = None):
     # Make a dictionary keyed by contig name
     annotatedcontigs = {}
     for annotation in annotations:
-        annotatedcontigs[annotation['seqid']] = annotation
+        annotatedcontigs.setdefault(annotation['seqid'],[]).append(annotation)
 
     # Dump annotations in JSON form
     with open('%s.annotations' % fafilename, 'w') as f:
