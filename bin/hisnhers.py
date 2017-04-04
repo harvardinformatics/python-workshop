@@ -54,9 +54,9 @@ def main(argv = None):
     (path,ext) = os.path.splitext(fqfilename)
     fafilename = path + '.fa'
     print 'Writing to %s' % fafilename
-    f = open(fafilename,'w')
-    for seqdata in seqs:
-        f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
+    with open(fafilename,'w') as f:
+        for seqdata in seqs:
+            f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
 
 
     # Run megaAssembler with fasta file input and read the output contig
