@@ -24,6 +24,9 @@ def fastqToSequenceList(fileh):
         raise Exception('fastq file is closed.')
         
     for line in fileh:
+        line = line.strip()
+        if line == '':
+            continue
         if line.startswith('@'):
             # It's a new record
             if seqid is not None:
@@ -33,7 +36,7 @@ def fastqToSequenceList(fileh):
             m = re.match(r'^@([^ ]+).*',line)
             if m is None:
                 raise Exception('No sequence identifier found after the @ symbol')
-            seqid = m.group(1)
+            seqid = m.group(1).strip()
 
         elif seqid is not None and bases is None and line.strip() != '+':
             bases = line.strip()
