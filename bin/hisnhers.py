@@ -46,7 +46,7 @@ def fastqToSequenceList(fileh):
     return seqs
 
 
-def main(argv = None):
+def main():
 
     # Read fastq file and report length, base counts
     seqs = []
