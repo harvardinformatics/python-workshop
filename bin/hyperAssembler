@@ -7,11 +7,7 @@ if [[ -z "$@" ]]; then
     exit 1
 fi
 
-if [[ ${#@} -gt 1 ]]; then
-    echo 'hyperAssembler only takes one argument (e.g. hyperAssembler human.fasta)'
-    exit 1
-fi
-echo "Assembling genome in $@"
+echo "Assembling genome in $1"
 
 echo "Start time: `date +%r`"
 
@@ -19,7 +15,7 @@ export contig=''
 
 while read -r line; do
     [[ "$line" =~ ^\> ]] || contig="${contig}${line}"
-done < "$@"
+done < "$1"
 
 
 sleep 5
@@ -29,12 +25,12 @@ half=`expr ${#contig} / 2`
 echo $half
 
 
-echo "Finished assembling ${@}.  Writing contigs into ${@}.contigs."
-echo "> contig1" > "${@}.contigs"
-echo "$contig" | cut -c-${half} >> "${@}.contigs"
+echo "Finished assembling $1  Writing contigs into $2."
+echo "> contig1" > "$2"
+echo "$contig" | cut -c-${half} >> "$2"
 half=`expr $half + 1`
-echo "> contig2" >> "${@}.contigs"
-echo "$contig" | cut -c${half}- >> "${@}.contigs"
+echo "> contig2" >> "$2"
+echo "$contig" | cut -c${half}- >> "$2"
 echo "End time: `date +%r`"
 echo 'Done'
 

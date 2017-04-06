@@ -64,13 +64,8 @@ def main():
 
     # Run megaAssembler with fasta file input and read the output contig
     contigfilename = '%s.contigs' % fafilename
-    assemblerargs = [
-        'megaAssembler',
-        fafilename,
-    ]
-
-
-    cmd = ' '.join(assemblerargs)
+    
+    cmd = 'megaAssembler {inputfile} {outputfile}'.format(inputfile=fafilename,outputfile=contigfilename)
     os.system('%s > /dev/null 2> /dev/null'  % cmd)
 
 
