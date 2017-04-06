@@ -70,15 +70,24 @@
 * Login to Odyssey
 * Get the course materials
     ```	
-    $ tar xvf /n/informatics/coursestuff/practical-python/stuff.tar.gz
+    [akitzmiller@holy2a ~]$ tar xvf /n/regal/informatics/workshops/python-workshop.tar.gz
     ```
 * Check python
     ```	
-    $ python --version
+    [akitzmiller@holy2a ~]$ python --version
     Python 2.6.6
-    $ which python
+    [akitzmiller@holy2a ~]$ which python
     /usr/bin/python
     ```
+* Hop in to the interpreter
+   ```bash
+   [akitzmiller@holy2a ~]$ python
+   Python 2.6.6 (r266:84292, Jan 22 2014, 09:42:36) 
+   [GCC 4.4.7 20120313 (Red Hat 4.4.7-4)] on linux2
+   Type "help", "copyright", "credits" or "license" for more information.
+   >>> 
+   ```
+   Use `Ctl-d`to get out
     
 --- 
 
@@ -119,16 +128,23 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 ```
 
 ---
-* Script permissions should be executable
-   ```
-   [akitzmiller@holy2a python-workshop]$ chmod +x bin/hisnhers.py
-   ```
 * Flexible interpreter path in the shebang
    ```
    #!/usr/bin/env python
    ```
+---
+
 * Indents must match - *4 spaces, do not use tabs*
-   
+   ```python
+   [akitzmiller@holy2a python-workshop]$ bin/hisnhers.py 
+     File "bin/hisnhers.py", line 79
+       seqs = []
+       ^
+   IndentationError: unexpected indent
+
+   ```
+---
+
 * Use a proper return value for modules named `__main__`
    ```python
    if __name__ == "__main__":
@@ -148,8 +164,8 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 * A name (function, class, variable, module) cannot be used unless it is imported, defined, or a *built-in*
 * You can import a module (which is a file) and use it's named things
    ```
-   [akitzmiller@holy2a ~]$ ls /usr/lib64/python2.7/os.py
-   /usr/lib64/python2.7/os.py
+   [akitzmiller@holy2a ~]$ ls /usr/lib64/python2.6/os.py
+   /usr/lib64/python2.6/os.py
    ```
    ```python
    >>> import os
@@ -237,13 +253,14 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 # File reading error solution
 
    ```python
+    # sys.argv == ['hisnhers.py','example.fq'] 
     if len(sys.argv) < 2:
         print 'Must supply a file name'
         return 1
         
     fqfilename = sys.argv[1]
     if not os.path.exists(fqfilename):
-        raise Exception('File %f does not exist' % fqfilename)
+        raise Exception('File %s does not exist' % fqfilename)
 
     with open(fqfilename,'r') as f:
         seqs = fastqToSequenceList(f)
@@ -288,7 +305,13 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    ```
 ---
 # Add sequence length and base counts
-* Print out base frequencies and sequence length for each sequence:
+* Print out base frequencies and sequence length for each sequence
+   ```python
+   >>> print seqs[0]
+   ('HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:18447:12115#0/1', 
+    'CGTAGCTGTGTGTACAAGGCCCGGGAACGTATTCACCGTG', 
+    'acdd^aa_Z^d^ddc`^_Q_aaa`_ddc\\dfdffff\\fff')
+   ```
    ```
    Sequence 1 Length: 106 A: 4, T: 4, C: 4, G: 4
    ```
@@ -372,7 +395,7 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
        reagent='SDS',
        volume=100
     )
-   '0.56 of SDS in 100 mL'
+   'You will need 0.56 of SDS in 100 mL'
 
    ```
 ---
@@ -382,6 +405,8 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 
 # Sequence length and base count
    ```python
+    # >>> seqs[0]
+    # ('HWUSI-EAS300R_0005_F2AAXX:8:30:18447:12115#0/1\n', 'CGTAGCTAACGTATTCACCGTG', '')
     for i,seqdata in enumerate(seqs):
         seqstr = seqdata[1]
         seqlen = len(seqstr)
@@ -390,6 +415,13 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
         for base in ['A','T','C','G']:
             basecountline += '%s: %d ' % (base,seqstr.count(base))
         print basecountline
+   ```
+   or
+   ```python
+        basecountstrs = ['Sequence %d Length: %d' % (i,seqlen)]
+        for base in ['A','T','C','G']:
+            basecountstrs.append('%s: %d' % (base,seqstr.count(base)))
+        print ' '.join(basecountstrs)
    ```
 ---
 # Contigs file error
@@ -401,10 +433,11 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
        sys.exit(main())
      File "./hisnhers.py", line 135, in main
        with open(contigfilename,'r') as c:
-   IOError: [Errno 2] No such file or directory: 'data/example.fq.contigs'
+   IOError: [Errno 2] No such file or directory: 'data/example.fa.contigs'
    [akitzmiller@holy2a python-workshop]$ 
    ```
 ---
+
 # Running commands with`os.system()`
 * There are about a dozen Python functions for running a command line tool, but only two of them are worth using.
 * `os.system()`runs a command using the shell and returns only the return code. stdout and stderr are sent to the console.  If you need to capture the contents, they must be redirected.
@@ -676,6 +709,17 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
  ** may include compiled C / Fortran libraries
  ** supports multiple "channels"
  ** update Python itself
+* Odyssey python modules are Anaconda modules
+  ```bash
+  [akitzmiller@holy2a ~]$ module load python/2.7.11-fasrc01
+
+  [akitzmiller@holy2a ~]$ module list
+
+  Currently Loaded Modules:
+    1) Anaconda/2.5.0-fasrc01   2) python/2.7.11-fasrc01
+
+  
+  
 ---
 # Anaconda
 * Get the latest
@@ -759,10 +803,10 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 # Anaconda virtual environments
 * Make an environment (make sure pip is installed)
    ```bash
-    [akitzmiller@holy2a ~]$ module load python/2.7.11-fasrc01
+    [akitzmiller@holy2a ~]$ module load python/2.7.13-fasrc01
     [akitzmiller@holy2a ~]$ module list
     Currently Loaded Modules:
-      1) Anaconda/2.5.0-fasrc01   2) python/2.7.11-fasrc01
+      1) Anaconda/4.3.0-fasrc01   2) python/2.7.13-fasrc01
 
     [akitzmiller@holy2a ~]$ conda create -n new pip
     The following NEW packages will be INSTALLED:
@@ -798,7 +842,7 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     [akitzmiller@holy2a ~] conda create -n clone --clone $PYTHON_HOME
     Using Anaconda Cloud api site https://api.anaconda.org
     Fetching package metadata: ..........
-    src_prefix: '/n/sw/fasrcsw/apps/Core/Anaconda/2.5.0-fasrc01/x'
+    src_prefix: '/n/sw/fasrcsw/apps/Core/Anaconda/4.3.0-fasrc01/x'
     dst_prefix: '/n/home_rc/akitzmiller/.conda/envs/clone'
     Packages: 163
     Files: 2254
@@ -1055,9 +1099,6 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    ```
 
 ---
-# JSON output file is missing some annotations
-
----
 # Python dictionaries
 * A dictionary is like a list, but can be indexed by non-integers (AKA hash map)
 * Elements are not necessarily in the order you think
@@ -1080,6 +1121,14 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    C: 999
    G: 100
    T: 120
+   ```
+---
+* Dictionary of lists
+   ```python
+    # Make a dictionary keyed by contig name
+    annotatedcontigs = {}
+    for annotation in annotations:
+        annotatedcontigs.setdefault(annotation['seqid'],[]).append(annotation)
    ```
 ---
 # Python can be used to submit Slurm jobs
@@ -1120,6 +1169,18 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    ```
 *  and use it to check sacct
    ```python
+   from subprocess import Popen,PIPE
+   def isDone(jobid):
+       dones = ['COMPLETED','CANCELLED','FAILED','TIMEOUT','PREEMPTED','NODE_FAIL']
+       proc = Popen('sacct --format state --noheader -j %d' % int(jobid),shell=True,stdout=PIPE,stderr=PIPE)
+       stdout,stderr = proc.communicate()
+       if proc.returncode != 0:
+           raise Exception('Error running sacct: %s' % stderr)
+       if stdout.strip() == '':
+           return False
+       lines = stdout.split()
+       if lines[0].strip() in dones:
+           return True
+       return False
    ```
-
 ---
