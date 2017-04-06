@@ -66,6 +66,7 @@ def main():
     contigfilename = '%s.contigs' % fafilename
     
     cmd = 'megaAssembler {inputfile} {outputfile}'.format(inputfile=fafilename,outputfile=contigfilename)
+    print 'Running %s' % cmd
     os.system('%s > /dev/null 2> /dev/null'  % cmd)
 
 
