@@ -51,7 +51,7 @@ def main(argv = None):
     # Read fastq file and report length, base counts
     seqs = []
     fqfilename = '/n/regal/informatics/aaron/testfile.fq'
-    fastqToSequenceList(fqfilename)
+    seqs = fastqToSequenceList(fqfilename)
 
     # Write out sequences in fasta format
     (path,ext) = os.path.splitext(fqfilename)
