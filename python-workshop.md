@@ -50,7 +50,7 @@
 * Learn python by debugging existing code
 * See common errors and their solutions
 * Learn how to search for programming solutions
-* Odyssey-specific lessions, including Anaconda clones
+* Odyssey-specific lessons, including Anaconda clones
 
 ---
 
@@ -261,7 +261,12 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     fqfilename = sys.argv[1]
     if not os.path.exists(fqfilename):
         raise Exception('File %s does not exist' % fqfilename)
+   ```
+   
+---
+# File reading error solution
 
+   ```python
     with open(fqfilename,'r') as f:
         seqs = fastqToSequenceList(f)
 
@@ -526,120 +531,12 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 
     # Run hyperAssembler with fastq file input and read the output contig
     contigfilename = '%s.contigs' % fafilename
-    assemblerargs = [
-        'hyperAssembler',
-        fafilename,
-    ]
-
-    cmd = ' '.join(assemblerargs)
+    cmd = 'hyperAssembler {inputfilename} {outputfilename}'.format(inputfilename=fafilename,outputfilename=contigfilename)
     returncode, stdoutstr, stderrstr = runcmd(cmd)
 
     if returncode != 0:
         raise Exception('Error running assembler with cmd %s\nstdout: %s\nstderr: %s' % (cmd,stdoutstr,stderrstr))
  
-   ```
----
-# Capture stdout and parse date information
----
-# Regular expressions
-* <span class="google">Google: python regular expressions</span>
-* Python regular expressions are a full set of processing options (character classes, capture groups, quantifiers, etc)
-* Match the beginning of your string.  Use a "raw" string to avoid backslash proliferation
-   ```python
-   >>> teststr = 'w00t!'
-   >>> import re
-   >>> re.match(r'[a-z]\d+.*',teststr)
-   <_sre.SRE_Match object at 0x7f0e518c3098>
-   ```
-* Use `re.search` if your pattern is later in the string
-   ```python
-   >>> re.match(r'\d+.*',teststr)
-   >>> re.search(r'\d+.*',teststr)
-   <_sre.SRE_Match object at 0x7f0e518c3098>
-   ```
----
-# Regular expressions
-* Use parens to "capture" text
-   ```python
-   >>> segment = 'TATGCGGCAAGTTACAAAAAAAAAAAAAAAATAAAGTTAAAAAAAAAAAAATGCTA'
-   >>> re.findall(r'(A{3,})T',segment)
-   ['AAAAAAAAAAAAAAAA', 'AAAAAAAAAAAAA']
-   ```
-* Split with a regex (with or without capture group)
-   ```python
-   >>> re.split(r'(A{3,})T',segment)
-   ['TATGCGGCAAGTTAC', 'AAAAAAAAAAAAAAAA', 'AAAGTT', 'AAAAAAAAAAAAA', 'GCTA']
-   >>> re.split(r'A{3,}',segment)
-   ['TATGCGGCAAGTTAC', 'T', 'GTT', 'TGCTA']
-   ```
-* Process multiline text
-   ```python
-   >>> fasta = '''
-   ... > transcript_1
-   ... ATCGATCGATTACGTACAAAAAAAAATACGTAGCTAAAAAAAAATCAGCTACG
-   ... AAAAAAAAAAAAAAAAAAACTAGTCGATGCTAGCTATCGATCGTATATATGAC
-   ... '''
-   >>> re.findall(r'A{3,}',fasta)
-   ['AAAAAAAAA', 'AAAAAAAAA', 'AAAAAAAAAAAAAAAAAAA']
-   ```
----
-# Date handling
-* <span class="google">Google python datetime</span>
-* The `datetime` and `timedelta` modules come with Python
-   ```python
-   >>> from datetime import datetime,timedelta
-   >>> datetime.now()
-   datetime.datetime(2017, 3, 16, 16, 52, 33, 639252)
-   >>> feb = datetime(2017,2,1)
-   >>> nextmonth = feb + timedelta(days=30)
-   >>> nextmonth
-   datetime.datetime(2017, 3, 3, 0, 0)
-   ```
-* `strftime` formats date objects
-   ```python
-   >>> nextmonth.strftime('%d/%m/%Y')
-   '03/03/2017'
-   ```
-* `strptime`parses dates according to a strict specification
-   ```python
-   >>> datetime.strptime('03/03/2017','%d/%m/%Y')
-   datetime.datetime(2017, 3, 3, 0, 0)
-   ```
-* `python-dateutil` package parses whatever you throw at it
-   ```python
-   >>> from dateutil import parser
-   >>> parser.parse('03/03/2017')
-   datetime.datetime(2017, 3, 3, 0, 0)
-   
-   >>> parser.parse('March 3, 2017')
-   datetime.datetime(2017, 3, 3, 0, 0)
-   ```
----
-# Get the start and end dates from the hyperAssembler output and calculate the time
-   ```
-   Assembling genome in data/example.fa
-   Start time: 04:01:00 PM
-   280
-   140
-   Finished assembling data/example.fa.  Writing contigs into data/example.fa.contigs.
-   End time: 04:01:05 PM
-
-   ```
----
-# Get the start and end dates
-   ```python
-    # Get the start and end time from stdout
-    from dateutil import parser
-    match = re.search(r'Start time: (.*)\n', stdoutstr, re.MULTILINE)
-    if match:
-        starttime = parser.parse(match.group(1))
-    match = re.search(r'End time: (.*)\n', stdoutstr, re.MULTILINE)
-    if match:
-        endtime = parser.parse(match.group(1))
-    if starttime and endtime:
-        delta = endtime - starttime
-        print 'Elapsed assembly time %d seconds' % delta.total_seconds()
-
    ```
 ---
 
@@ -663,14 +560,8 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    [akitzmiller@holy2a ~]$ cd mpi4py-2.0.0
    [akitzmiller@holy2a mpi4py-2.0.0]$ python setup.py install
    ```
-* Avoid doing this
+* Install directly from PyPI with `pip`, including dependencies
    ```
-   [akitzmiller@holy2a mpi4py-2.0.0]$ python setup.py install --user
-   ```
----
-# Python packages - pip
-* `pip`installs directly from the huge PyPI repository and recurses dependencies
-   ```bash
    [akitzmiller@holy2a /tmp]$ pip install Flask-Script
    Collecting Flask-Script
      Downloading Flask-Script-2.0.5.tar.gz (42kB)
@@ -678,23 +569,7 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
    Collecting Flask (from Flask-Script)
      Downloading Flask-0.12-py2.py3-none-any.whl (82kB)
        100% |████████████████████████████████| 92kB 2.0MB/s 
-   Collecting click>=2.0 (from Flask->Flask-Script)
-     Downloading click-6.7-py2.py3-none-any.whl (71kB)
-       100% |████████████████████████████████| 71kB 4.9MB/s 
-   ...
-   Building wheels for collected packages: Flask-Script, itsdangerous
-     Running setup.py bdist_wheel for Flask-Script ... done
-     Running setup.py bdist_wheel for itsdangerous ... done
-   Successfully built Flask-Script itsdangerous
-   Installing collected packages: click, Jinja2, Werkzeug, itsdangerous, Flask, Flask-Script
-   Successfully installed Flask-0.12 Flask-Script-2.0.5 Jinja2-2.9.5 Werkzeug-0.12.1 click-6.7 itsdangerous-0.24
    ```
----
-* Copy an entire python setup with pip
-  ```
-  pip freeze > requirements.txt
-  pip install -r requirements.txt
-  ```
 * Install from a git repository (including branch or tag)
    ```bash
    [akitzmiller@holy2a ~]$ pip install git+https://github.com/harvardinformatics/MISO.git@slurm
@@ -725,58 +600,10 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 * Get the latest
    ```bash
     [akitzmiller@holy2a ~]$ conda install netcdf4
-    Fetching package metadata .........
-    Solving package specifications: .
-
-    The following NEW packages will be INSTALLED:
-
-        h5py:         2.6.0-np111py27_2 
-        hdf4:         4.2.12-0          
-        hdf5:         1.8.17-1          
-        libnetcdf:    4.4.1-0           
-        netcdf4:      1.2.4-np111py27_0 
-
-    The following packages will be UPDATED:
-
-        astropy:      1.1.2-np110py27_0  --> 1.3-np111py27_0   
-        bottleneck:   1.0.0-np110py27_0  --> 1.2.0-np111py27_0 
-        curl:         7.45.0-0           --> 7.49.0-1          
-        llvmlite:     0.9.0-py27_0       --> 0.16.0-py27_0     
-        matplotlib:   1.5.1-np110py27_0  --> 1.5.1-np111py27_0 
-        numba:        0.24.0-np110py27_0 --> 0.31.0-np111py27_0
-        numexpr:      2.5-np110py27_0    --> 2.5.2-np111py27_0 
-        numpy:        1.10.4-py27_1      --> 1.11.0-py27_0     
-        pandas:       0.18.0-np110py27_0 --> 0.19.2-np111py27_1
-        patsy:        0.4.0-np110py27_0  --> 0.4.1-py27_0      
-        pycurl:       7.19.5.3-py27_0    --> 7.43.0-py27_0     
-        pytables:     3.2.2-np110py27_1  --> 3.3.0-np111py27_0 
-        scikit-image: 0.12.3-np110py27_0 --> 0.12.3-np111py27_1
-        scikit-learn: 0.17.1-np110py27_0 --> 0.17.1-np111py27_0
-        scipy:        0.17.0-np110py27_2 --> 0.17.0-np111py27_2
-        statsmodels:  0.6.1-np110py27_0  --> 0.8.0-np111py27_0 
-
-    Proceed ([y]/n)? 
-
    ```
-  ---
-  # Anaconda
-  * or a specific version
+* or a specific version
      ```bash
       [akitzmiller@holy2a ~]$ conda install netcdf4==1.2.1
-      Fetching package metadata .........
-      Solving package specifications: .
-
-      Package plan for installation in environment /home/akitzmiller/anaconda2/envs/workshop:
-
-      The following NEW packages will be INSTALLED:
-
-          h5py:      2.6.0-np110py27_0
-          hdf5:      1.8.15.1-3       
-          libnetcdf: 4.3.3.1-3        
-          netcdf4:   1.2.1-np110py27_0
-
-      Proceed ([y]/n)? 
-
      ```
  ---
 # Virtual environments - virtualenv
@@ -785,54 +612,11 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 * Some packages depend on mutually exclusive versions of other packages
 * virtualenv allows you to create one or more Python environments over which you have control
    ```bash
-   [akitzmiller@holy2a ~]$ mkdir envs
-   [akitzmiller@holy2a ~]$ cd envs
    [akitzmiller@holy2a envs]$ virtualenv workshop
    New python executable in /n/home_rc/akitzmiller/envs/workshop/bin/python
    Installing setuptools, pip, wheel...done.
    [akitzmiller@holy2a envs]$ source workshop/bin/activate
    (workshop) [akitzmiller@holy2a envs]$ which python
-   ~/envs/workshop/bin/python
-   (workshop) [akitzmiller@holy2a envs]$ pip install -r workshop-requirements.txt
-   ...
-   (workshop) [akitzmiller@holy2a envs]$ deactivate
-   [akitzmiller@holy2a envs]$ which python
-   /usr/bin/python
-   ```
----
-# Anaconda virtual environments
-* Make an environment (make sure pip is installed)
-   ```bash
-    [akitzmiller@holy2a ~]$ module load python/2.7.13-fasrc01
-    [akitzmiller@holy2a ~]$ module list
-    Currently Loaded Modules:
-      1) Anaconda/4.3.0-fasrc01   2) python/2.7.13-fasrc01
-
-    [akitzmiller@holy2a ~]$ conda create -n new pip
-    The following NEW packages will be INSTALLED:
-
-        openssl:    1.0.2k-1     
-        pip:        9.0.1-py27_1 
-        python:     2.7.13-0    
-        ...
-        wheel:      0.29.0-py27_0
-        zlib:       1.2.8-3      
-
-    Proceed ([y]/n)? y
-    ...
-    #
-    # To activate this environment, use:
-    # > source activate new
-    #
-    # To deactivate this environment, use:
-    # > source deactivate new
-    #
-    [akitzmiller@holy2a ~]$ source activate new
-    (new) [akitzmiller@holy2a ~]$ which python
-    ~/.conda/envs/new/bin/python
-    (new) [akitzmiller@holy2a ~]$ source deactivate
-    [akitzmiller@holy2a ~]$
-   
    ```
 ---
 # Anaconda virtual environments
@@ -864,91 +648,28 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 * Install package from Continuum
    ```bash
   (clone)[akitzmiller@holy2a ~] conda install Django --yes
-  Using Anaconda Cloud api site https://api.anaconda.org
-
-  The following packages will be downloaded:
-
-      package                    |            build
-      ---------------------------|-----------------
-      ca-certificates-2017.1.23  |                0         166 KB
-      django-1.10.6              |           py27_0         4.5 MB
-      ------------------------------------------------------------
-                                             Total:         4.7 MB
-   
    ```
-   *With some of our Anacondas, you may need to do this:*
+* With some of our Anacondas, you may need to do this:*
    ```bash
    (clone)[akitzmiller@holy2a ~] conda remove conda-env conda-build --yes
    ```
----
 * Or from a particular conda channel
    ```bash
     (clone)[akitzmiller@holy2a ~] conda install --channel conda-forge tensorflow
-    Using Anaconda Cloud api site https://api.anaconda.org
-
-    The following NEW packages will be INSTALLED:
-
-        ca-certificates: 2017.1.23-0       
-        mkl:             11.3.3-0          
-        mock:            2.0.0-py27_0      
-        numpy:           1.11.2-py27_0     
-        pbr:             1.10.0-py27_0     
-        protobuf:        3.2.0-py27_0      
-        scipy:           0.18.1-np111py27_0
-        tensorflow:      1.0.0-py27_0      
-
-    The following packages will be UPDATED:
-
-        numexpr:         2.5.2-np111py27_nomkl_1  [nomkl] --> 2.5.2-np111py27_1 
-        python:          2.7.11-0                 --> 2.7.13-0          
-        scikit-learn:    0.17.1-np111py27_nomkl_1 [nomkl] --> 0.17.1-np111py27_1
-        sqlite:          3.9.2-0                  --> 3.13.0-0          
-
-    Proceed ([y]/n)? n
    ```
----
 * Or do a pip install
    ```bash
     (clone)[akitzmiller@holy2a ~] pip install BioPython
     Collecting BioPython
       Downloading biopython-1.68.tar.gz (14.4MB)
         100% |████████████████████████████████| 14.4MB 24kB/s 
-    Building wheels for collected packages: BioPython
-      Running setup.py bdist_wheel for BioPython ... done
-      Stored in directory: /n/home_rc/akitzmiller/.cache/pip/wheels/a7/40/7e/cf0e1056601c97bbf42acac9cbb4b2c69a5c0e982873a2fe81
-    Successfully built BioPython
-    Installing collected packages: BioPython
-    Successfully installed BioPython-1.68
-    (clone)[akitzmiller@holy2a ~] 
    ```
 ---
 * Compiled code in conda packages can be a problem
    ```
     (clone)[akitzmiller@holy2a ~] conda install -c conda-forge tensorflow
-    Using Anaconda Cloud api site https://api.anaconda.org
 
-    The following NEW packages will be INSTALLED:
-
-        ...
-        numpy:           1.11.2-py27_0     
-        pbr:             1.10.0-py27_0     
-        protobuf:        3.2.0-py27_0
-        scipy:           0.18.1-np111py27_0
-        tensorflow:      1.0.0-py27_0      
-
-    The following packages will be UPDATED:
-    ...
-    
-    Unlinking packages ...
-    [      COMPLETE      ]|####################| 100%
-    Linking packages ...
-    [      COMPLETE      ]|####################| 100%
     (clone)[akitzmiller@holy2a ~] python
-    Python 2.7.13 |Anaconda 2.5.0 (64-bit)| (default, Dec 20 2016, 23:09:15) 
-    [GCC 4.4.7 20120313 (Red Hat 4.4.7-1)] on linux2
-    Type "help", "copyright", "credits" or "license" for more information.
-    Anaconda is brought to you by Continuum Analytics.
-    Please check out: http://continuum.io/thanks and https://anaconda.org
     >>> import tensorflow as tf
     Traceback (most recent call last):
     ...
@@ -1184,3 +905,105 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
        return False
    ```
 ---
+# Capture stdout and parse date information
+---
+# Regular expressions
+* <span class="google">Google: python regular expressions</span>
+* Python regular expressions are a full set of processing options (character classes, capture groups, quantifiers, etc)
+* Match the beginning of your string.  Use a "raw" string to avoid backslash proliferation
+   ```python
+   >>> teststr = 'w00t!'
+   >>> import re
+   >>> re.match(r'[a-z]\d+.*',teststr)
+   <_sre.SRE_Match object at 0x7f0e518c3098>
+   ```
+* Use `re.search` if your pattern is later in the string
+   ```python
+   >>> re.match(r'\d+.*',teststr)
+   >>> re.search(r'\d+.*',teststr)
+   <_sre.SRE_Match object at 0x7f0e518c3098>
+   ```
+---
+# Regular expressions
+* Use parens to "capture" text
+   ```python
+   >>> segment = 'TATGCGGCAAGTTACAAAAAAAAAAAAAAAATAAAGTTAAAAAAAAAAAAATGCTA'
+   >>> re.findall(r'(A{3,})T',segment)
+   ['AAAAAAAAAAAAAAAA', 'AAAAAAAAAAAAA']
+   ```
+* Split with a regex (with or without capture group)
+   ```python
+   >>> re.split(r'(A{3,})T',segment)
+   ['TATGCGGCAAGTTAC', 'AAAAAAAAAAAAAAAA', 'AAAGTT', 'AAAAAAAAAAAAA', 'GCTA']
+   >>> re.split(r'A{3,}',segment)
+   ['TATGCGGCAAGTTAC', 'T', 'GTT', 'TGCTA']
+   ```
+* Process multiline text
+   ```python
+   >>> fasta = '''
+   ... > transcript_1
+   ... ATCGATCGATTACGTACAAAAAAAAATACGTAGCTAAAAAAAAATCAGCTACG
+   ... AAAAAAAAAAAAAAAAAAACTAGTCGATGCTAGCTATCGATCGTATATATGAC
+   ... '''
+   >>> re.findall(r'A{3,}',fasta)
+   ['AAAAAAAAA', 'AAAAAAAAA', 'AAAAAAAAAAAAAAAAAAA']
+   ```
+---
+# Date handling
+* <span class="google">Google python datetime</span>
+* The `datetime` and `timedelta` modules come with Python
+   ```python
+   >>> from datetime import datetime,timedelta
+   >>> datetime.now()
+   datetime.datetime(2017, 3, 16, 16, 52, 33, 639252)
+   >>> feb = datetime(2017,2,1)
+   >>> nextmonth = feb + timedelta(days=30)
+   >>> nextmonth
+   datetime.datetime(2017, 3, 3, 0, 0)
+   ```
+* `strftime` formats date objects
+   ```python
+   >>> nextmonth.strftime('%d/%m/%Y')
+   '03/03/2017'
+   ```
+* `strptime`parses dates according to a strict specification
+   ```python
+   >>> datetime.strptime('03/03/2017','%d/%m/%Y')
+   datetime.datetime(2017, 3, 3, 0, 0)
+   ```
+* `python-dateutil` package parses whatever you throw at it
+   ```python
+   >>> from dateutil import parser
+   >>> parser.parse('03/03/2017')
+   datetime.datetime(2017, 3, 3, 0, 0)
+   
+   >>> parser.parse('March 3, 2017')
+   datetime.datetime(2017, 3, 3, 0, 0)
+   ```
+---
+# Get the start and end dates from the hyperAssembler output and calculate the time
+   ```
+   Assembling genome in data/example.fa
+   Start time: 04:01:00 PM
+   280
+   140
+   Finished assembling data/example.fa.  Writing contigs into data/example.fa.contigs.
+   End time: 04:01:05 PM
+
+   ```
+---
+# Get the start and end dates
+   ```python
+    # Get the start and end time from stdout
+    from dateutil import parser
+    match = re.search(r'Start time: (.*)\n', stdoutstr, re.MULTILINE)
+    if match:
+        starttime = parser.parse(match.group(1))
+    match = re.search(r'End time: (.*)\n', stdoutstr, re.MULTILINE)
+    if match:
+        endtime = parser.parse(match.group(1))
+    if starttime and endtime:
+        delta = endtime - starttime
+        print 'Elapsed assembly time %d seconds' % delta.total_seconds()
+
+   ```
