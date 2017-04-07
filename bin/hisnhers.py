@@ -53,6 +53,13 @@ def main():
     fqfilename = '/n/regal/informatics/aaron/testfile.fq'
     seqs = fastqToSequenceList(fqfilename)
 
+    # Process the data that is in the seqs list
+    # seqs[0]
+    # ('HWUSI-EAS300R_0005_F2AAXX:8:30:18447:12115#0/1\n', 'CGTAGCTAACGTATTCACCGTG', '')
+    # for i,seqdata in enumerate(seqs):
+    #    Do some stuff here
+    #    print basecountline
+
     # Write out sequences in fasta format
     (path,ext) = os.path.splitext(fqfilename)
     fafilename = path + '.fa'
@@ -62,14 +69,14 @@ def main():
             f.write('>%s\n%s\n' % (seqdata[0],seqdata[1]))
 
 
-    # Run megaAssembler with fasta file input and read the output contig
+    # Run megaAssembler with fasta file input and the specified contig output filename
     contigfilename = '%s.contigs' % fafilename
     
     cmd = 'megaAssembler {inputfile} {outputfile}'.format(inputfile=fafilename,outputfile=contigfilename)
     print 'Running %s' % cmd
     os.system('%s > /dev/null 2> /dev/null'  % cmd)
 
-
+    # Create an array of contig data 
     contigs = []
     with open(contigfilename,'r') as c:
         seqid = None
@@ -86,7 +93,7 @@ def main():
                 contigs.append((seqid, line))
                 seqid = None
 
-
+    # Annotate the contigs, store in a dictionary and then write out JSON
     from ha.annotate import annotateStartStopCodons, annotatePalindromes
 
     # One at a time
