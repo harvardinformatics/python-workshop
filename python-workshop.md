@@ -309,126 +309,6 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
     fqfilename = args.FASTQ_FILE
    ```
 ---
-# Add sequence length and base counts
-* Print out base frequencies and sequence length for each sequence
-   ```python
-   >>> print seqs[0]
-   ('HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:18447:12115#0/1', 
-    'CGTAGCTGTGTGTACAAGGCCCGGGAACGTATTCACCGTG', 
-    'acdd^aa_Z^d^ddc`^_Q_aaa`_ddc\\dfdffff\\fff')
-   ```
-   ```
-   Sequence 1 Length: 106 A: 4, T: 4, C: 4, G: 4
-   ```
-
----
-# Lists and tuples
-* 0 indexed list of data items that is either modifiable (lists) or unmodifiable (tuples)
-   ```python
-    >>> bases = ['A','T','C','G']
-    >>> bases[1]
-    'T'
-    >>> bases.append('U')
-    >>> bases[4]
-    'U'
-    >>> bases = ('A','T','C','G')
-    >>> bases[1]
-    'T'
-    >>> bases.append('U')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-    AttributeError: 'tuple' object has no attribute 'append'
-
-   ```
----
-# Lists and tuples
-* Iteration
-   ```python
-   for base in bases:
-       print base
-       
-   for i, base in enumerate(bases):
-       print base
-   ```
-* Indexing
-   ```python
-   >>> bases = ['A','T','C','G']
-   >>> print bases[1:2]
-   ['T']
-   >>> print bases[1:3]
-   ['T', 'C']
-   >>> print bases[-1:]
-   ['G']
-   ```
----
-# Lists and tuples
-* Concatenating
-   ```python
-   allbases = dnabases + rnabases
-   ```
-* Counting
-   ```python
-    >>> bases
-    ['A', 'T', 'C', 'G']
-    >>> len(bases)
-    4
-    >>> bases.count('A')
-    1
-   ```
-* Short hand list initialization by another iterable (list comprehension)
-   ```python
-   baselengths = [len(base) for base in bases]
-   
-   complements = [dna.complement(base) for base in bases]
-   ```
-
----
-# Strings
-* Strings are lists of characters ...
-   ```python
-   >>> contig = 'ATCACTAGTCGTCG'
-   >>> contig[1:3]
-   'TC'
-   ```
-* ... that can be constructed with Python formatting tools
-   ```python
-   >>> reagent = 'SDS'
-   >>> 'You will need %.2f mg of %s in %d mL' % (.565,reagent,100)
-   'You will need 0.56 mg of SDS in 100 mL'
-   >>> 'You will need {reagentmass:.2f} of {reagent} in {volume} mL'.format(
-       reagentmass=0.565,
-       reagent='SDS',
-       volume=100
-    )
-   'You will need 0.56 of SDS in 100 mL'
-
-   ```
----
-# Add sequence length and base counts
-
----
-
-# Sequence length and base count
-   ```python
-    # >>> seqs[0]
-    # ('HWUSI-EAS300R_0005_F2AAXX:8:30:18447:12115#0/1\n', 'CGTAGCTAACGTATTCACCGTG', '')
-    for i,seqdata in enumerate(seqs):
-        seqstr = seqdata[1]
-        seqlen = len(seqstr)
-		
-        basecountline = 'Sequence %d Length: %d ' % (i,seqlen)
-        for base in ['A','T','C','G']:
-            basecountline += '%s: %d ' % (base,seqstr.count(base))
-        print basecountline
-   ```
-   or
-   ```python
-        basecountstrs = ['Sequence %d Length: %d' % (i,seqlen)]
-        for base in ['A','T','C','G']:
-            basecountstrs.append('%s: %d' % (base,seqstr.count(base)))
-        print ' '.join(basecountstrs)
-   ```
----
 # Contigs file error
    ```bash
    [akitzmiller@holy2a python-workshop]$ ./bin/hisnhers.py data/example.fq
@@ -903,6 +783,126 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
        if lines[0].strip() in dones:
            return True
        return False
+   ```
+---
+# Add sequence length and base counts
+* Print out base frequencies and sequence length for each sequence
+   ```python
+   >>> print seqs[0]
+   ('HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:18447:12115#0/1', 
+    'CGTAGCTGTGTGTACAAGGCCCGGGAACGTATTCACCGTG', 
+    'acdd^aa_Z^d^ddc`^_Q_aaa`_ddc\\dfdffff\\fff')
+   ```
+   ```
+   Sequence 1 Length: 106 A: 4, T: 4, C: 4, G: 4
+   ```
+
+---
+# Lists and tuples
+* 0 indexed list of data items that is either modifiable (lists) or unmodifiable (tuples)
+   ```python
+    >>> bases = ['A','T','C','G']
+    >>> bases[1]
+    'T'
+    >>> bases.append('U')
+    >>> bases[4]
+    'U'
+    >>> bases = ('A','T','C','G')
+    >>> bases[1]
+    'T'
+    >>> bases.append('U')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    AttributeError: 'tuple' object has no attribute 'append'
+
+   ```
+---
+# Lists and tuples
+* Iteration
+   ```python
+   for base in bases:
+       print base
+       
+   for i, base in enumerate(bases):
+       print base
+   ```
+* Indexing
+   ```python
+   >>> bases = ['A','T','C','G']
+   >>> print bases[1:2]
+   ['T']
+   >>> print bases[1:3]
+   ['T', 'C']
+   >>> print bases[-1:]
+   ['G']
+   ```
+---
+# Lists and tuples
+* Concatenating
+   ```python
+   allbases = dnabases + rnabases
+   ```
+* Counting
+   ```python
+    >>> bases
+    ['A', 'T', 'C', 'G']
+    >>> len(bases)
+    4
+    >>> bases.count('A')
+    1
+   ```
+* Short hand list initialization by another iterable (list comprehension)
+   ```python
+   baselengths = [len(base) for base in bases]
+   
+   complements = [dna.complement(base) for base in bases]
+   ```
+
+---
+# Strings
+* Strings are lists of characters ...
+   ```python
+   >>> contig = 'ATCACTAGTCGTCG'
+   >>> contig[1:3]
+   'TC'
+   ```
+* ... that can be constructed with Python formatting tools
+   ```python
+   >>> reagent = 'SDS'
+   >>> 'You will need %.2f mg of %s in %d mL' % (.565,reagent,100)
+   'You will need 0.56 mg of SDS in 100 mL'
+   >>> 'You will need {reagentmass:.2f} of {reagent} in {volume} mL'.format(
+       reagentmass=0.565,
+       reagent='SDS',
+       volume=100
+    )
+   'You will need 0.56 of SDS in 100 mL'
+
+   ```
+---
+# Add sequence length and base counts
+
+---
+
+# Sequence length and base count
+   ```python
+    # >>> seqs[0]
+    # ('HWUSI-EAS300R_0005_F2AAXX:8:30:18447:12115#0/1\n', 'CGTAGCTAACGTATTCACCGTG', '')
+    for i,seqdata in enumerate(seqs):
+        seqstr = seqdata[1]
+        seqlen = len(seqstr)
+		
+        basecountline = 'Sequence %d Length: %d ' % (i,seqlen)
+        for base in ['A','T','C','G']:
+            basecountline += '%s: %d ' % (base,seqstr.count(base))
+        print basecountline
+   ```
+   or
+   ```python
+        basecountstrs = ['Sequence %d Length: %d' % (i,seqlen)]
+        for base in ['A','T','C','G']:
+            basecountstrs.append('%s: %d' % (base,seqstr.count(base)))
+        print ' '.join(basecountstrs)
    ```
 ---
 # Capture stdout and parse date information
