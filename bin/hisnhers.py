@@ -114,6 +114,3 @@ def main():
     with open('%s.annotations' % fafilename, 'w') as f:
         f.write(json.dumps(annotatedcontigs,indent=4))
 
-
-if __name__ == '__main__':
-    sys.exit(main())
