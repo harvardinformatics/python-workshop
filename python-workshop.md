@@ -103,13 +103,35 @@
 # `hisnhers.py`
 Broken script that attempts to 
 1. read in a FASTQ file
+```
+@HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1207:12132#0/1
+AGGGCGACCGGCAAGCAGGGGTTCGAACGGCAGGAGCCCC
++HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1207:12132#0/1
+b```acdffff[fffgffgggggggddRdbfffc]]bddd
+@HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1293:12132#0/1
+CGGGCCACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
++HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1293:12132#0/1
+L_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+```
+
 2. report some information about the sequences
 3. write to FASTA and feed to an assembler to create contigs
-4. annotate the contigs
-
-
+```
+@HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1207:12132#0/1
+AGGGCGACCGGCAAGCAGGGGTTCGAACGGCAGGAGCCCC
+@HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1293:12132#0/1
+CGGGCCACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+```
+4. annotate the contigs using the ha.annotate module
+---
 # `ha/annotate.py`
 Annotation module that will be called by `hisnhers.py` serially and, then, in parallel
+
+```
+AGGGCGACCGAATTCTACGATGCATC
+         CTTAAG
+         ------  palindrome 10..15
+```
 
 ---
 
@@ -128,22 +150,69 @@ Annotation module that will be called by `hisnhers.py` serially and, then, in pa
 ```
 
 ---
-* Flexible interpreter path in the shebang
+
+# Bad interpreter error
+  ```
+  [akitzmiller@holy2a python-workshop]$ bin/hisnhers.py 
+  -bash: bin/hisnhers.py: /usr/local/bin/python: bad interpreter: No such file or directory
+  ```
+---
+
+# Bad interpreter fix
+Flexible interpreter path in the shebang line that picks up the default python in your environment
    ```
    #!/usr/bin/env python
    ```
 ---
 
-* Indents must match - *4 spaces, do not use tabs*
-   ```python
-   [akitzmiller@holy2a python-workshop]$ bin/hisnhers.py 
-     File "bin/hisnhers.py", line 79
-       seqs = []
-       ^
-   IndentationError: unexpected indent
-
-   ```
+# Run the script
+```
+[akitzmiller@holy2a python-workshop]$ bin/hisnhers.py
+```
 ---
+
+# Indentation error
+
+```
+[akitzmiller@holy2a python-workshop]$ bin/hisnhers.py 
+  File "bin/hisnhers.py", line 20
+    seqs = []
+    ^
+IndentationError: unexpected indent
+```
+
+---
+
+# Indentation fix
+Move lines 20 and 21 back two spaces.
+
+**Do not use tabs**
+```python
+ 15 def fastqToSequenceList(fileh):
+ 16     '''
+ 17     Takes a fastq file handle, returns a list tuples including
+ 18     seqid, sequence bases, and quality scores
+ 19     '''
+ 20     seqs = []
+ 21     seqid = bases = qscores = None
+ 22 
+ 23     if fileh.closed:
+
+```
+
+---
+
+# Run the script
+```
+[akitzmiller@holy2a python-workshop]$ bin/hisnhers.py
+```
+
+---
+
+# Import error
+
+---
+
 
 * Use a proper return value for modules named `__main__`
    ```python
