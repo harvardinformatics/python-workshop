@@ -114,15 +114,14 @@ CGGGCCACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 L_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 ```
 
-2. report some information about the sequences
-3. write to FASTA and feed to an assembler to create contigs
+2. write to FASTA and feed to an assembler to create contigs
 ```
 @HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1207:12132#0/1
 AGGGCGACCGGCAAGCAGGGGTTCGAACGGCAGGAGCCCC
 @HWUSI-EAS300R_0005_FC62TL2AAXX:8:30:1293:12132#0/1
 CGGGCCACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 ```
-4. annotate the contigs using the ha.annotate module
+3. annotate the contigs using the ha.annotate module
 ---
 # `ha/annotate.py`
 Annotation module that will be called by `hisnhers.py` serially and, then, in parallel
@@ -210,26 +209,35 @@ Move lines 20 and 21 back two spaces.
 ---
 
 # Import error
+```
+[akitzmiller@builds python-workshop]$ bin/hisnhers.py 
+Traceback (most recent call last):
+  File "bin/hisnhers.py", line 118, in <module>
+    sys.exit(main())
+NameError: name 'sys' is not defined
+```
 
 ---
+# Import error fix
+Add `import sys` to the import section of the script
 
-
-* Use a proper return value for modules named `__main__`
-   ```python
-   if __name__ == "__main__":
-       sys.exit(main())
-   ```
-* `import sys`
+```
+  1 #!/usr/bin/python
+  2 
+  3 '''
+  4 hisnhers.py
+  5 Harvard Informatics Script for Nextgen HiSeq Extraction and Reporting of Sequences
+  6 
+  7 '''
+  8 import sys
+  9 import os, traceback, re
+ 10 import json
+ 11 import subprocess
+ 12 import time
+```
 
 ---
-# Google Interlude: Magic Variables, Magic Functions
-* Meta data about a python module or package
-* Double underbar (dunder) designation, e.g. `__name__, __ispkg__`
-* <span class="google">Google: python magic variables</span>
-* Python objects also have magic functions that allow you to override basic behaviors (e.g. `__str__`)
-
----
-# `imports`
+# `import`
 * A name (function, class, variable, module) cannot be used unless it is imported, defined, or a *built-in*
 * You can import a module (which is a file) and use it's named things
    ```
@@ -249,6 +257,10 @@ Move lines 20 and 21 back two spaces.
    >>> from os import makedirs
    >>> makedirs('/tmp/a/j/k')
   ```
+
+---
+# `import`
+
 * Imports are based on paths, where path separators, `/`, are converted to periods
    ```
    [akitzmiller@holy2a python-workshop]$ find ha -name "annotate.py"
@@ -257,8 +269,6 @@ Move lines 20 and 21 back two spaces.
    ```python
    from ha.annotate import annotateStartStopCodon
    ```
----
-# `imports`
 * Valid paths depends on`sys.path`, including `PYTHONPATH`
    ```bash
    [akitzmiller@holy2a ~]$ echo $PYTHONPATH
@@ -305,7 +315,13 @@ Move lines 20 and 21 back two spaces.
 ** `sys.argv` contains the arguments passed to the script
 
 ---
-# Fix the file reading error
+
+# Run the script
+```
+[akitzmiller@holy2a python-workshop]$ bin/hisnhers.py
+```
+---
+# Attribute error 
    ```bash
    [akitzmiller@holy2a ~]$ bin/hisnhers.py
     Traceback (most recent call last):
@@ -319,28 +335,97 @@ Move lines 20 and 21 back two spaces.
    ```
 * Stack trace shows you where to look
 ---
-# File reading error solution
 
-   ```python
-    # sys.argv == ['hisnhers.py','example.fq'] 
-    if len(sys.argv) < 2:
-        print 'Must supply a file name'
-        return 1
-        
-    fqfilename = sys.argv[1]
-    if not os.path.exists(fqfilename):
-        raise Exception('File %s does not exist' % fqfilename)
-   ```
-   
+# Google "python open file handle"
+The top hit may not be the best one
+
 ---
-# File reading error solution
 
-   ```python
-    with open(fqfilename,'r') as f:
-        seqs = fastqToSequenceList(f)
-
-   ```
+# Attribute error fix
+Open a file handle
+```
+ 49 def main():
+ 50 
+ 51     # Read fastq file and report length, base counts
+ 52     seqs = []
+ 53     fqfilename = '/n/regal/informatics/aaron/testfile.fq'
+ 54     fqfileh = open(fqfilename, 'r')
+ 55     seqs = fastqToSequenceList(fqfileh)
+ 56 
+```
 ---
+
+# Run the script
+
+```
+[akitzmiller@holy2a python-workshop]$ bin/hisnhers.py
+```
+---
+
+# No such file or directory error
+
+```
+[akitzmiller@holy2a python-workshop]$ bin/hisnhers.py 
+Traceback (most recent call last):
+  File "bin/hisnhers.py", line 119, in <module>
+    sys.exit(main())
+  File "bin/hisnhers.py", line 54, in main
+    fqfileh = open(fqfilename, 'r')
+IOError: [Errno 2] No such file or directory: '/n/regal/informatics/aaron/testfile.fq'
+```
+
+---
+
+# No such file or directory error fix
+
+```python
+ 49 def main():
+ 50 
+ 51     # Read fastq file and report length, base counts
+ 52     seqs = []
+ 53     fqfilename = 'data/example.fq'
+ 54     fqfileh = open(fqfilename, 'r')
+ 55     seqs = fastqToSequenceList(fqfileh)
+```
+
+---
+
+# Convert the hardcoded file name into a command argument
+`sys.argv` is the command line argument list for the python interpreter
+
+```python
+# > /usr/bin/python hisnhers.py data/example.fq
+# sys.argv == ['hisnhers.py','data/example.fq'] 
+if len(sys.argv) < 2:
+    print 'Must supply a file name'
+    return 1
+fqfilename = sys.argv[1]
+```
+
+---
+
+# No such file or directory error fix (better)
+
+```python
+ 49 def main():
+ 50 
+ 51     # Read fastq file and report length, base counts
+ 52     seqs = []
+ 53     # sys.argv == ['hisnhers.py','data/example.fq'] 
+ 54     if len(sys.argv) < 2:
+ 55         print 'Must supply a file name'
+ 56         return 1
+ 57     
+ 58     fqfilename = sys.argv[1]
+ 59     if not os.path.exists(fqfilename):
+ 60         raise Exception('File %s does not exist' % fqfilename)
+ 61
+ 62     fqfileh = open(fqfilename, 'r')
+ 63     seqs = fastqToSequenceList(fqfileh)
+```
+
+---
+
 # File processing with context managers
 * `f = open()`returns a file handle
 * `with`block is a context manager that closes the file handle on exit
@@ -349,43 +434,38 @@ Move lines 20 and 21 back two spaces.
    with open(fqfilename,'r') as f:
        seqs = fastqToSequenceList(f)
    ```
-*  `for`loop on a handle iterates over file lines
-	```python
-    # Code block defined by colon and indent
-    for line in fileh:
-        line = line.strip()
-        if line == '':
-           continue
-    ```
 ---
-# Convert the hardcoded file name into a command argument
 
-   ```python
-    # if block defined by colon, indent
-    if len(sys.argv) < 2:
-        print 'Must supply a file name'
-        return 1
-    fqfilename = sys.argv[1]
-   ```
-# or use argparse to handle real arguments
-   ```python
-    from argparse import ArgumentParser, RawDescriptionHelpFormatter
+# No such file or directory error fix (even better)
 
-    parser = ArgumentParser(description='Python workshop tool', formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('FASTQ_FILE',help='Fastq file')
-    args = parser.parse_args()
+```python
+ 49 def main():
+ 50 
+ 51     # Read fastq file and report length, base counts
+ 52     seqs = []
+ 53     # sys.argv == ['hisnhers.py','data/example.fq'] 
+ 54     if len(sys.argv) < 2:
+ 55         print 'Must supply a file name'
+ 56         return 1
+ 57     
+ 58     fqfilename = sys.argv[1]
+ 59     if not os.path.exists(fqfilename):
+ 60         raise Exception('File %s does not exist' % fqfilename)
+ 61     
+ 62     with open(fqfilename,'r') as f:
+ 63         seqs = fastqToSequenceList(f)
+```
 
-    fqfilename = args.FASTQ_FILE
-   ```
 ---
+
 # Contigs file error
    ```bash
    [akitzmiller@holy2a python-workshop]$ ./bin/hisnhers.py data/example.fq
    Writing to data/example.fa
    Traceback (most recent call last):
-     File "./hisnhers.py", line 210, in <module>
+     File "./hisnhers.py", line 127, in <module>
        sys.exit(main())
-     File "./hisnhers.py", line 135, in main
+     File "./hisnhers.py", line 90, in main
        with open(contigfilename,'r') as c:
    IOError: [Errno 2] No such file or directory: 'data/example.fa.contigs'
    [akitzmiller@holy2a python-workshop]$ 
@@ -441,7 +521,9 @@ Move lines 20 and 21 back two spaces.
     'If I find you been creepin\n'
     >>> 
    ```
+
 ---
+
 # Running commands
 * You may need to alter the environment of the subprocess
 * Loading modules can work with`&&`
@@ -462,9 +544,24 @@ Move lines 20 and 21 back two spaces.
    ```
 
 ---
+
+# Remove the stderr and stdout redirection from the os.system call.
+
+---
+
+# Set your PATH to include project bin directory
+
+```
+> export PATH=`pwd`/bin:$PATH
+```
+
+---
+
 # Replace the call to megaAssembler with a Popen-based call to hyperAssembler.  
 # Capture return code, stdout, and stderr 
+
 ---
+
 # Call to hyperAssembler
 
    ```python
@@ -661,11 +758,45 @@ Move lines 20 and 21 back two spaces.
 ---
 # Fix the missing lookkool module by installing from the Harvard Informatics github repository into an Anaconda clone
 
-   ```
-   pip install git+https://github.com/harvardinformatics/lookkool.git
-   ```
+```
+pip install git+https://github.com/harvardinformatics/lookkool.git
+```
+or
+```
+> cd ..
+> tar xvf /n/regal/informatics/workshops/lookkool.tar.gz
+> cd lookkool
+> pip install .
+```
 
 ---
+
+# Source code installation error
+```python
+    creating build/temp.linux-x86_64-2.7
+    creating build/temp.linux-x86_64-2.7/src
+    gcc -pthread -fno-strict-aliasing -g -O2 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I/n/home_rc/akitzmiller/.conda/envs/ody/include/python2.7 -c src/lookkool.c -o build/temp.linux-x86_64-2.7/src/lookkool.o
+    src/lookkool.c:3:23: error: stdatomic.h: No such file or directory
+    error: command 'gcc' failed with exit status 1
+```
+
+---
+
+# Google "error: stdatomic.h: No such file or directory"
+
+---
+
+# Source code installation fix
+Load a newer gcc module
+
+```
+> source new-modules.sh
+> module load gcc/4.9.3-fasrc01
+> pip install .
+```
+
+---
+
 # Parallel Python - Multiprocessing
 * The Python interpreter does not support real parallel threading
 * The `multiprocessing` module simulates a typical threading library using forked processes
