@@ -75,15 +75,15 @@
 * Check python
     ```	
     [akitzmiller@holy2a ~]$ python --version
-    Python 2.6.6
+    Python 2.7.5
     [akitzmiller@holy2a ~]$ which python
     /usr/bin/python
     ```
 * Hop in to the interpreter
    ```bash
    [akitzmiller@holy2a ~]$ python
-   Python 2.6.6 (r266:84292, Jan 22 2014, 09:42:36) 
-   [GCC 4.4.7 20120313 (Red Hat 4.4.7-4)] on linux2
+   Python 2.7.5 (default, Aug  4 2017, 00:39:18) 
+   [GCC 4.8.5 20150623 (Red Hat 4.8.5-16)] on linux2
    Type "help", "copyright", "credits" or "license" for more information.
    >>> 
    ```
@@ -241,8 +241,8 @@ Add `import sys` to the import section of the script
 * A name (function, class, variable, module) cannot be used unless it is imported, defined, or a *built-in*
 * You can import a module (which is a file) and use it's named things
    ```
-   [akitzmiller@holy2a ~]$ ls /usr/lib64/python2.6/os.py
-   /usr/lib64/python2.6/os.py
+   [akitzmiller@holy2a ~]$ ls /usr/lib64/python2.7/os.py
+   /usr/lib64/python2.7/os.py
    ```
    ```python
    >>> import os
@@ -275,17 +275,16 @@ Add `import sys` to the import section of the script
    /odyssey/rc_admin/sw/admin/rcpy:
    
    [akitzmiller@holy2a ~]$ python
-   Python 2.6.6 (r266:84292, Jan 22 2014, 09:42:36) 
-   [GCC 4.4.7 20120313 (Red Hat 4.4.7-4)] on linux2
+   Python 2.7.5 (default, Aug  4 2017, 00:39:18) 
+   [GCC 4.8.5 20150623 (Red Hat 4.8.5-16)] on linux2
    Type "help", "copyright", "credits" or "license" for more information.
    >>> import sys
    >>> print sys.path
-   ['', '/odyssey/rc_admin/sw/admin/rcpy', '/n/home_rc/akitzmiller',
-   '/usr/lib64/python26.zip', '/usr/lib64/python2.6',
-   '/usr/lib64/python2.6/plat-linux2', '/usr/lib64/python2.6/lib-tk',
-   ...
-   '/usr/lib64/python2.6/site-packages/webkit-1.0', '/usr/lib/python2.6/site-packages', 
-   '/usr/lib/python2.6/site-packages/setuptools-0.6c11-py2.6.egg-info']
+   ['', '/odyssey/rc_admin/sw/admin/rcpy', '/n/home_rc/akitzmiller/workshop', 
+   '/usr/lib64/python27.zip', '/usr/lib64/python2.7', '/usr/lib64/python2.7/plat-linux2', 
+   '/usr/lib64/python2.7/lib-tk', '/usr/lib64/python2.7/lib-old', '/usr/lib64/python2.7/lib-dynload', 
+   '/usr/lib64/python2.7/site-packages', '/usr/lib64/python2.7/site-packages/gtk-2.0', 
+   '/usr/lib/python2.7/site-packages']
    ```
 * Watch out for `~/.local`
 ---
@@ -666,21 +665,27 @@ fqfilename = sys.argv[1]
    ```
 ---
 # Anaconda virtual environments
-* Make a clone of the parent environment (may take a while) so that all base packages are included
+* Make a local conda environment
    ```bash
-    [akitzmiller@holy2a ~] module load python/2.7.13-fasrc01 
-    [akitzmiller@holy2a ~] conda create -n clone --clone $PYTHON_HOME
-    Using Anaconda Cloud api site https://api.anaconda.org
-    Fetching package metadata: ..........
-    src_prefix: '/n/sw/fasrcsw/apps/Core/Anaconda/4.3.0-fasrc01/x'
-    dst_prefix: '/n/home_rc/akitzmiller/.conda/envs/clone'
-    Packages: 163
-    Files: 2254
-    Linking packages ...
-    [      COMPLETE      ]|#####################| 100%
+    [akitzmiller@holy2a ~] module load python/2.7.14-fasrc02 
+    [akitzmiller@holy2a ~] conda create -n workshop pip -y
+    Fetching package metadata .................
+    Solving package specifications: .
+
+    Package plan for installation in environment /n/home_rc/akitzmiller/.conda/envs/workshop:
+
+    The following NEW packages will be INSTALLED:
+
+        ca-certificates: 2018.8.24-ha4d7672_0 conda-forge
+        ...
+        pip:             18.1-py27_1000       conda-forge
+        python:          2.7.15-h33da82c_4    conda-forge
+        ...
+        zlib:            1.2.11-h470a237_3    conda-forge
+
     #
     # To activate this environment, use:
-    # $ source activate clone
+    # $ source activate workshop
     #
     # To deactivate this environment, use:
     # $ source deactivate
@@ -693,19 +698,15 @@ fqfilename = sys.argv[1]
 ---
 * Install package from Continuum
    ```bash
-  (clone)[akitzmiller@holy2a ~] conda install Django --yes
-   ```
-* With some of our Anacondas, you may need to do this:*
-   ```bash
-   (clone)[akitzmiller@holy2a ~] conda remove conda-env conda-build --yes
+  (workshop)[akitzmiller@holy2a ~] conda install Django --yes
    ```
 * Or from a particular conda channel
    ```bash
-    (clone)[akitzmiller@holy2a ~] conda install --channel conda-forge tensorflow
+    (workshop)[akitzmiller@holy2a ~] conda install --channel conda-forge tensorflow
    ```
 * Or do a pip install
    ```bash
-    (clone)[akitzmiller@holy2a ~] pip install BioPython
+    (workshop)[akitzmiller@holy2a ~] pip install BioPython
     Collecting BioPython
       Downloading biopython-1.68.tar.gz (14.4MB)
         100% |████████████████████████████████| 14.4MB 24kB/s 
@@ -713,9 +714,9 @@ fqfilename = sys.argv[1]
 ---
 * Compiled code in conda packages can be a problem
    ```
-    (clone)[akitzmiller@holy2a ~] conda install -c conda-forge tensorflow
+    (workshop)[akitzmiller@holy2a ~] conda install -c conda-forge tensorflow
 
-    (clone)[akitzmiller@holy2a ~] python
+    (workshop)[akitzmiller@holy2a ~] python
     >>> import tensorflow as tf
     Traceback (most recent call last):
     ...
@@ -726,9 +727,9 @@ fqfilename = sys.argv[1]
    
    ```
  ---
- * Installing with pip instead of conda compiles source code, which may not be better
+ * Installing with pip instead of conda generally compiles source code, which may or may not be better
     ```
-    (clone)[akitzmiller@holy2a ~] pip install gattlib
+    (workshop)[akitzmiller@holy2a ~] pip install gattlib
     Collecting gattlib
       Downloading gattlib-0.20150805.tar.gz (1.7MB)
         100% |████████████████████████████████| 1.7MB 170kB/s 
@@ -790,8 +791,7 @@ or
 Load a newer gcc module
 
 ```
-> source new-modules.sh
-> module load gcc/4.9.3-fasrc01
+> module load gcc/4.9.3-fasrc01 
 > pip install .
 ```
 
